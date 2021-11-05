@@ -1,0 +1,92 @@
+<html lang="ko">
+<head charset="utf-8">
+    <title>근무</title>
+    <link rel="stylesheet" href="./style/main.css"/>
+    <link rel="stylesheet" href="./style/font.css"/>
+</head>
+<body>
+    <div class="title">
+        <h1 style="margin-left:2em;">근무 인수인계</h1>
+        <h4 style="margin-left:20px;">
+            <input class="current" placeholder="" type="text"/> 년
+            <input class="current" placeholder="" type="text"/> 월
+            <input class="current" placeholder="" type="text"/> 일
+        </h4>
+    </div>
+    <div class="container">
+        <div class="column" id="pw">
+            <button class="text-fit" id="showpw">번호 보이기</button>
+            <button class="text-fit" disabled><a href="#">근무표 다운로드</a></button>
+            
+            <div class="work">
+                <textarea class="content" id ="important" type="text" placeholder="근무간 숙지사항"></textarea>
+            </div>
+            <div class="pw">
+                <textarea class="none" id="password" type="text" placeholder="번호"></textarea>
+            </div>
+            
+            <div id="pic-container" style="text-align:-webkit-center;">
+                <button class="text-fit" id="changepic-backward"> 뒤로 </button>
+                <span id="picnum">1</span><span>/3</span>
+                <button class="text-fit" id="changepic-backward"> 앞으로 </button>
+            </div>
+            
+            <center class="1" id="img-pool">
+                <img class="show" id="1" src ="./img/1.jpg" charset="utf-8"/>
+                <img class="show" id="2" src ="./img/1.jpg" charset="utf-8"/>
+                <img class="show" id="3" src ="./img/1.jpg" charset="utf-8"/>
+            </center>
+        </div>
+    </div>
+    <div class="container">
+        <div class="column" id="workspace">
+            <center style="margin-bottom:20px;">
+                <button class="push-lock" id="08-09">08-09</button>
+                <button class="push-lock" id="09-10">09-10</button>
+            </center>
+            <div class="workgroup-hidden" id="0809w">
+                <div class="worktimecol" id="0809t">
+                    0809
+                    <button class="add-check" id="0809">항목추가</button>
+                </div>
+                <div class="workcheckcol" id="0809c">
+                    <div class="work">
+                        <input class="checked" type="checkbox"/>
+                        <input class="todo" placeholder="항목" type="text" value="방송"/>
+                        <button class="smalldel">삭제</button>
+                    </div>
+                    <div class="work">
+                        <input class="checked" type="checkbox"/>
+                        <input class="todo" placeholder="항목" type="text" value="달력 수정"/>
+                        <button class="smalldel">삭제</button>
+                    </div>
+                </div>
+            </div>
+            <div class="workgroup-hidden" id="0910w">
+                <div class="worktimecol" id="0910t">
+                    0910
+                    <button class="add-check" id="0910">항목추가</button>
+                </div>
+                <div class="workcheckcol" id="0910c">
+                    <div class="work">
+                        <input class="checked" type="checkbox"/>
+                        <input class="todo" placeholder="항목" type="text" value="인수인계서 작성"/>
+                        <button class="smalldel">삭제</button>
+                    </div>
+                    <div class="work">
+                        <input class="checked" type="checkbox"/>
+                        <input class="todo" placeholder="항목" type="text" value="청소"/>
+                        <button class="smalldel">삭제</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div clas="column" id
+        </div>
+    </div>
+
+
+</body>
+<script type="script/javascript" src="./main.js"></script>
+</html>
