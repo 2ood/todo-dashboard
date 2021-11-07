@@ -3,31 +3,19 @@ window.onload=function() {
     bf = document.getElementById("changepic-forward");
     bb = document.getElementById("changepic-backward");
     picnum = document.getElementById("picnum");
-    pw = document.querySelector("textarea#password");
-    content= document.querySelector("button#showpw");
-    addworks = document.getElementsByClassName("todo");
-    addchecks = document.getElementById("add-check");
+    pw = document.querySelector("textarea#number");
+    content= document.querySelector("button#shownum");
+    addworks = document.getElementsByClassName("push-lock");
+    addchecks = document.getElementsByClassName("add-check");
     dels = document.getElementsByClassName("smalldel");
     addComment = document.getElementById("add-comment");
     
-    
+    console.log("here");
     //----------implementation of picture changing----------------
     
     bf.onclick = function() {
         if(imgs.className=="1") imgs.className="2";
         else if(imgs.className=="2") imgs.className="3";
-        else if(imgs.className=="3") imgs.className="4";
-        else if(imgs.className=="4") imgs.className="5";
-        else if(imgs.className=="5") imgs.className="6";
-        else if(imgs.className=="6") imgs.className="7";
-        else if(imgs.className=="7") imgs.className="8";
-        else if(imgs.className=="8") imgs.className="9";
-        else if(imgs.className=="9") imgs.className="10";
-        else if(imgs.className=="10") imgs.className="11";
-        else if(imgs.className=="11") imgs.className="12";
-        else if(imgs.className=="12") imgs.className="13";
-        else if(imgs.className=="13") imgs.className="14";
-        else if(imgs.className=="14") imgs.className="15";
         else imgs.className="1";
         
         picnum.innerHTML=imgs.className;
@@ -36,24 +24,12 @@ window.onload=function() {
             if(imgs.childNodes[i].id==imgs.className) imgs.childNodes[i].className="show";
             else imgs.childNodes[i].className="none";
         }
-    } //end of bf.onclick
+    }; //end of bf.onclick
     
     bb.onclick = function() {
         if(imgs.className=="2") imgs.className="1";
         else if(imgs.className=="3") imgs.className="2";
-        else if(imgs.className=="4") imgs.className="3";
-        else if(imgs.className=="5") imgs.className="4";
-        else if(imgs.className=="6") imgs.className="5";
-        else if(imgs.className=="7") imgs.className="6";
-        else if(imgs.className=="8") imgs.className="7";
-        else if(imgs.className=="9") imgs.className="8";
-        else if(imgs.className=="10") imgs.className="9";
-        else if(imgs.className=="11") imgs.className="10";
-        else if(imgs.className=="12") imgs.className="11";
-        else if(imgs.className=="13") imgs.className="12";
-        else if(imgs.className=="14") imgs.className="13";
-        else if(imgs.className=="15") imgs.className="14";
-        else imgs.className="15";
+        else imgs.className="3";
         
         picnum.innerHTML=imgs.className;
         
@@ -61,7 +37,7 @@ window.onload=function() {
             if(imgs.childNodes[i].id==imgs.className) imgs.childNodes[i].className="show";
             else imgs.childNodes[i].className="none";
         }
-    } //end of bb.onclick
+    }; //end of bb.onclick
     
     //----------end of implementation of picture changing----------------
     
@@ -94,19 +70,21 @@ window.onload=function() {
     content.onclick = function() {
         if(pw.className!="none") {
             pw.className="none";
-            this.innerHTML="비밀번호 보이기";
+            this.innerHTML="전화번호 보이기";
         }
         else { 
              pw.className="content";
-            this.innerHTML="비밀번호 숨기기";
+            this.innerHTML="전화번호 숨기기";
         }
-    }
+    };
     //----------end of implementation of showing password area----------------
+    
     
     //----------implementation of adding work groups----------------
     for(var i=0;i<addworks.length;i++) {
+        console.log(addworks.length);
         addworks[i].onclick=function() {
-            var tar = ducment.getElementById(this.id+"w");
+            var tar = document.getElementById(this.id+"w");
             if(tar.className=="workgroup-hidden"){
                 tar.className="workgroup";
                 this.className="push-lock-selected";
@@ -192,7 +170,7 @@ window.onload=function() {
                 var tar = this.parentNode;
                 tar.parentNode.removeChild(tar);
             }
-        }
+        };
         
         w = document.createElement("div");
         w.className="work";
@@ -208,6 +186,6 @@ window.onload=function() {
         work.appendChild(b);
         work.appendChild(w);
         this.parentNode.insertBefore(work,this);
-    }
-    //----------end of implementation of adding comment div----------------
+    };
 }
+//----------end of implementation of adding comment div----------------
