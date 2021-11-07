@@ -3,6 +3,7 @@
     <title>근무</title>
     <link rel="stylesheet" href="./style/main.css"/>
     <link rel="stylesheet" href="./style/font.css"/>
+    <script src="./main.js" charset="utf-8"></script>
 </head>
 <body>
     <div class="title">
@@ -13,6 +14,7 @@
             <input class="current" placeholder="" type="text"/> 일
         </h4>
     </div>
+    <hr/>
     <div class="container">
         <div class="column" id="pw">
             <button class="text-fit" id="showpw">번호 보이기</button>
@@ -31,10 +33,10 @@
                 <button class="text-fit" id="changepic-backward"> 앞으로 </button>
             </div>
             
-            <center class="1" id="img-pool">
-                <img class="show" id="1" src ="./img/1.jpg" charset="utf-8"/>
-                <img class="show" id="2" src ="./img/1.jpg" charset="utf-8"/>
-                <img class="show" id="3" src ="./img/1.jpg" charset="utf-8"/>
+            <center class="2" id="img-pool">
+                <img class="none" id="1" src ="./img/1.jpg" charset="utf-8"/>
+                <img class="show" id="2" src ="./img/2.jpg" charset="utf-8"/>
+                <img class="none" id="3" src ="./img/3.jpg" charset="utf-8"/>
             </center>
         </div>
     </div>
@@ -46,7 +48,7 @@
             </center>
             <div class="workgroup-hidden" id="0809w">
                 <div class="worktimecol" id="0809t">
-                    0809
+                    0809<br/>
                     <button class="add-check" id="0809">항목추가</button>
                 </div>
                 <div class="workcheckcol" id="0809c">
@@ -64,7 +66,7 @@
             </div>
             <div class="workgroup-hidden" id="0910w">
                 <div class="worktimecol" id="0910t">
-                    0910
+                    0910<br/>
                     <button class="add-check" id="0910">항목추가</button>
                 </div>
                 <div class="workcheckcol" id="0910c">
@@ -81,18 +83,16 @@
                 </div>
             </div>
         </div>
-        <div class="container">
-            <div clas="column" id="comments">
-                <div class="work">
-                    <input class="name" placeholder="시간" type="text"/>
-                    <input class="name" placeholder="이름" type="text"/>
-                    <button class="smalldel" id="commentdel">삭제</button>
-                    <div class="work">
-                        <textarea class="content" type="text" placeholder="근무간 특이사항 없습니다."/>    
-                    </div>
-                </div>
-                <button class="fill" id="add-comment">추가</button>
+    </div>
+    <div class="container">
+        <div class="column" id="comments">
+            <div class="work">
+                <input class="name" placeholder="시간" type="text"/>
+                <input class="name" placeholder="이름" type="text"/>
+                <button class="smalldel" id="commentdel">삭제</button>
             </div>
+            <textarea class="content" type="text" placeholder="근무간 특이사항 없습니다."></textarea>
+            <button class="fill" id="add-comment">추가</button>
         </div>
     </div>
 

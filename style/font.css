@@ -1,0 +1,22 @@
+@charset "utf-8";
+
+@font-face { 
+    font-family : 'NotoSan-thin';
+    font-style : normal;
+    font-weight:100;
+    src : url('./fonts/NotoSansKR-Thin.woff') format('woff');
+}
+
+@font-face { 
+    font-family : 'NotoSan-regular';
+    font-style : normal;
+    font-weight:400;
+    src : url('./fonts/NotoSansKR-Regular.woff') format('woff');
+}
+
+@font-face { 
+    font-family : 'NotoSan-thin';
+    font-style : normal;
+    font-weight:700;
+    src : url('./fonts/NotoSansKR-Bold.woff') format('woff');
+}
