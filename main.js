@@ -55,9 +55,7 @@ go.addEventListener("click",()=>{
 
 function initializeList(docName) {
 
-  for(let i=0;i<todo_ul.children.length;i++) {
-    todo_ul.removeChild(todo_ul.children[i]);
-  }
+  todo_ul.innerHTML="";
 
   const dateRef = firestore.collection('todo').doc(docName);
   dateRef.get().then((doc)=>{
