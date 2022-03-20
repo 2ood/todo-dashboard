@@ -49,6 +49,12 @@
   cursor : pointer;
 }
 
+#go {
+  background-color: white;
+  border : 1px black solid;
+  padding : 2px;
+  margin : 10px;
+}
 
 
 li input {

@@ -12,35 +12,17 @@ const firestore = app.firestore();
 const todayis = document.getElementById("today-is");
 todayis.innerHTML += getTodayDocName();
 const todayRef = firestore.collection('todo').doc(getTodayDocName());
-
-todayRef.get().then((doc)=>{
-  if(!doc.exists) {
-    todayRef.set({
-      TODOS :[]
-    });
-  } else ;
-});
-
 const todo_ul = document.getElementById("todo-ul");
-
-
-todayRef.get().then((doc)=>{
-  if(doc.exists) {
-    const docs = doc.data();
-    const arr = docs.TODOS;
-    console.log("here");
-    for(let i=0;i<arr.length;i++) {
-      todo_ul.innerHTML+= `
-      <li><input type="text" value="${arr[i]}"></input><div class="cancel">X</div></li>`;
-    }
-    cancels = todo_ul.getElementsByClassName("cancel");
-    for(c of cancels) {
-      c.addEventListener("click",handleCancel);
-    }
-  }
-});
-
 const add = document.getElementById("add");
+const save = document.getElementById("save");
+const go = document.getElementById("go");
+const target_date_input = document.getElementById("target-date");
+let target_date = target_date_input.value;
+
+target_date_input.value = getTodayDocName();
+initializeList(getTodayDocName());
+
+
 add.addEventListener("click",(evt)=>{
   let new_li = document.createElement("li");
   let input = document.createElement("input");
@@ -54,22 +36,72 @@ add.addEventListener("click",(evt)=>{
   todo_ul.appendChild(new_li);
 });
 
-const save = document.getElementById("save");
+
 save.addEventListener("click",(evt)=>{
   const array = todo_ul.getElementsByTagName("input");
   let contents_array =[];
   for(let i=0;i<array.length;i++) {
-    contents_array.push(array[i].value);
+    if(!array[i].classList.contains("none"))contents_array.push(array[i].value);
   }
-  todayRef.update({
+  targetRef = firestore.collection('todo').doc(target_date);
+  targetRef.update({
     TODOS : contents_array
   });
 });
 
+
+go.addEventListener("click",()=>{
+  target_date = target_date_input.value;
+  initializeList(target_date);
+});
+
+function initializeList(docName) {
+
+  for(let i=0;i<todo_ul.children.length;i++) {
+    todo_ul.removeChild(todo_ul.children[i]);
+  }
+
+  const dateRef = firestore.collection('todo').doc(docName);
+  dateRef.get().then((doc)=>{
+    if(doc.exists) {
+      const arr = doc.data().TODOS;
+      if(arr.length==0) {
+        todo_ul.innerHTML+= `
+        <li><input type="text" value="(None)" class="none"></input><div class="cancel">X</div></li>`;
+        todo_ul.querySelector("input.none:first-of-type").addEventListener("change",(evt)=>{evt.srcElement.classList.remove("none");});
+      }
+      for(let i=0;i<arr.length;i++) {
+        todo_ul.innerHTML+= `
+        <li><input type="text" value="${arr[i]}"></input><div class="cancel">X</div></li>`;
+      }
+      cancels = todo_ul.getElementsByClassName("cancel");
+      for(c of cancels) {
+        c.addEventListener("click",handleCancel);
+      }
+    }
+    else {
+        dateRef.set({
+          TODOS :[]
+        });
+          todo_ul.innerHTML+= `
+          <li><input type="text" value="(None)" class="none"></input><div class="cancel">X</div></li>`;
+          todo_ul.querySelector("input.none:first-of-type").addEventListener("change",(evt)=>{evt.srcElement.classList.remove("none");});
+      }
+  });
+}
+
 function getTodayDocName() {
   const today = new Date;
-  const date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
-  return date;
+  let month = '' + (today.getMonth() + 1);
+  let day = '' + today.getDate();
+  let year = today.getFullYear();
+
+    if (month.length < 2)
+        month = '0' + month;
+    if (day.length < 2)
+        day = '0' + day;
+
+    return [year, month, day].join('-');
 }
 
 function handleCancel(evt) {
