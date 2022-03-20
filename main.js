@@ -17,7 +17,6 @@ const add = document.getElementById("add");
 const save = document.getElementById("save");
 const go = document.getElementById("go");
 const target_date_input = document.getElementById("target-date");
-let target_date = target_date_input.value;
 
 target_date_input.value = getTodayDocName();
 initializeList(getTodayDocName());
@@ -43,7 +42,7 @@ save.addEventListener("click",(evt)=>{
   for(let i=0;i<array.length;i++) {
     if(!array[i].classList.contains("none"))contents_array.push(array[i].value);
   }
-  targetRef = firestore.collection('todo').doc(target_date);
+  targetRef = firestore.collection('todo').doc(target_date_input.value);
   targetRef.update({
     TODOS : contents_array
   });
@@ -51,8 +50,7 @@ save.addEventListener("click",(evt)=>{
 
 
 go.addEventListener("click",()=>{
-  target_date = target_date_input.value;
-  initializeList(target_date);
+  initializeList(target_date_input.value);
 });
 
 function initializeList(docName) {
