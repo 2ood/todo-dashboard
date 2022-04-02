@@ -1,191 +1,166 @@
-window.onload=function() {
-    imgs = document.getElementById("img-pool");
-    bf = document.getElementById("changepic-forward");
-    bb = document.getElementById("changepic-backward");
-    picnum = document.getElementById("picnum");
-    pw = document.querySelector("textarea#number");
-    content= document.querySelector("button#shownum");
-    addworks = document.getElementsByClassName("push-lock");
-    addchecks = document.getElementsByClassName("add-check");
-    dels = document.getElementsByClassName("smalldel");
-    addComment = document.getElementById("add-comment");
-    
-    console.log("here");
-    //----------implementation of picture changing----------------
-    
-    bf.onclick = function() {
-        if(imgs.className=="1") imgs.className="2";
-        else if(imgs.className=="2") imgs.className="3";
-        else imgs.className="1";
-        
-        picnum.innerHTML=imgs.className;
-        
-        for(var i =0;i<imgs.childNodes.length;i++) {
-            if(imgs.childNodes[i].id==imgs.className) imgs.childNodes[i].className="show";
-            else imgs.childNodes[i].className="none";
-        }
-    }; //end of bf.onclick
-    
-    bb.onclick = function() {
-        if(imgs.className=="2") imgs.className="1";
-        else if(imgs.className=="3") imgs.className="2";
-        else imgs.className="3";
-        
-        picnum.innerHTML=imgs.className;
-        
-        for(var i =0;i<imgs.childNodes.length;i++) {
-            if(imgs.childNodes[i].id==imgs.className) imgs.childNodes[i].className="show";
-            else imgs.childNodes[i].className="none";
-        }
-    }; //end of bb.onclick
-    
-    //----------end of implementation of picture changing----------------
-    
-    //----------implementation of saving shortkey----------------
-    // saving shortkey is Alt+s
-    document.addEventListener("keydown", on_keydown);
-    function on_keydown(e){
-        //console.log(e.key);
-        if(e.altKey && e.key=='s'){
-            console.log("save");
-            save();
-        }
-        else if(e.key=='ArrowRight') bf.click();
-        else if(e.key=='ArrowLeft') bb.click();
+const firebaseConfig = {
+  apiKey: "AIzaSyCSTx5Z9L4imimR2Hzz7a_Mo9RMisk9vDQ",
+  authDomain: "ood-to-do.firebaseapp.com",
+  projectId: "ood-to-do",
+  storageBucket: "ood-to-do.appspot.com",
+  messagingSenderId: "58882087407",
+  appId: "1:58882087407:web:48d72fc07389e36e22be1a"
+};
+
+firebase.initializeApp(config);
+const app = firebase.initializeApp(firebaseConfig);
+const firestore = app.firestore();
+const todayis = document.getElementById("today-is");
+todayis.innerHTML += getTodayDocName();
+const todayRef = firestore.collection('todo').doc(getTodayDocName());
+const todo_ul = document.getElementById("todo-ul");
+const add = document.getElementById("add");
+const save = document.getElementById("save");
+const go = document.getElementById("go");
+const go_today = document.getElementById("go-today");
+const target_date_input = document.getElementById("target-date");
+
+target_date_input.value = getTodayDocName();
+initializeList(getTodayDocName());
+
+todo_ul.addEventListener("dragover",handleDrag);
+
+add.addEventListener("click",(evt)=>{
+  todo_ul.appendChild(buildLi("",true));
+});
+
+
+save.addEventListener("click",(evt)=>{
+  const array = todo_ul.getElementsByTagName("input");
+  let contents_array =[];
+  for(let i=0;i<array.length;i++) {
+    if(!array[i].classList.contains("none"))contents_array.push(array[i].value);
+  }
+  targetRef = firestore.collection('todo').doc(target_date_input.value);
+  targetRef.update({
+    TODOS : contents_array
+  }).then(()=>{
+    save.innerHTML="saved!";
+    setTimeout(()=>{save.innerHTML="save";},2000);
+  });
+});
+
+
+go.addEventListener("click",()=>{
+  initializeList(target_date_input.value);
+});
+
+go_today.addEventListener("click",()=>{
+  target_date_input.value = getTodayDocName();
+  initializeList(target_date_input.value);
+});
+
+function initializeList(docName) {
+
+  todo_ul.innerHTML="";
+
+  const dateRef = firestore.collection('todo').doc(docName);
+  dateRef.get().then((doc)=>{
+    if(doc.exists) {
+      const arr = doc.data().TODOS;
+      if(arr.length==0) {
+        let li = buildLi("(none)",true);
+        todo_ul.appendChild(li);
+      }
+      for(let i=0;i<arr.length;i++) {
+        todo_ul.appendChild(buildLi(arr[i],false));
+      }
+      cancels = todo_ul.getElementsByClassName("cancel");
+      for(c of cancels) {
+        c.addEventListener("click",handleCancel);
+      }
     }
-    
-    function save() {
-        var htmlContent = [document.head.innerHTML,document.body.innerHTML];
-        var bl = new Blob(htmlContent, {type:"text/html"});
-        var a = document.createElement("a");
-        a.href = URL.createObjectURL(bl);
-        a.download="index.html";
-        a.hidden=true;
-        document.body.appendChild(a);
-        a.click();
-    }
-    //----------end of implementation of saving shortkey----------------
-    
-    //----------implementation of showing password area----------------
-    content.onclick = function() {
-        if(pw.className!="none") {
-            pw.className="none";
-            this.innerHTML="전화번호 보이기";
-        }
-        else { 
-             pw.className="content";
-            this.innerHTML="전화번호 숨기기";
-        }
-    };
-    //----------end of implementation of showing password area----------------
-    
-    
-    //----------implementation of adding work groups----------------
-    for(var i=0;i<addworks.length;i++) {
-        console.log(addworks.length);
-        addworks[i].onclick=function() {
-            var tar = document.getElementById(this.id+"w");
-            if(tar.className=="workgroup-hidden"){
-                tar.className="workgroup";
-                this.className="push-lock-selected";
-            }
-            else {
-                tar.className="workgroup-hidden";
-                this.className="push-lock";
-            }
-        }
-    }
-    
-    //----------end of implementation of adding work groups----------------
-    
-    //----------implementation of adding todos----------------
-    for(var i =0;i<addchecks.length;i++) {
-        addchecks[i].onclick=function() {
-            var tar = document.getElementById(this.id+"c");
-            tar.appendChild(buildChecks());
-        }
-    }
-    
-    function buildChecks() {
-        var d = document.createElement("div");
-        d.className="work";
-        var ic = document.createElement("input");
-        ic.setAttribute("type","checkbox");
-        var ict= document.createElement("input");
-        ict.setAttribute("type","text");
-        ict.className="todo";
-        ict.setAttribute("placeholder","항목");
-        ict.setAttribute("value","");
-        
-        var icb = document.createElement("button");
-        icb.className="smalldel";
-        icb.innerHTML="삭제";
-        icb.onclick = function() {
-            if(confirm("진짜로?")){
-                var tar = this.parentNode;
-                tar.parentNode.removeChild(tar);
-            }
-        }
-        
-        d.appendChild(ic);
-        d.appendChild(ict);
-        d.appendChild(icb);
-        return d;
-    }
-    //----------end of implementation of adding todos----------------
-    
-    //----------implementation of smalldels----------------
-    for(var i=0;i<dels.length;i++) {
-        dels[i].onclick= function() {
-            if(confirm("진짜로?")){
-                var tar = this.parentNode;
-                tar.parentNode.removeChild(tar);
-            }
-        }
-    }
-        
-    //----------end of implementation of smalldels----------------
-    
-    //----------implementation of adding comment div----------------
-    addComment.onclick = function() {
-        work = document.createElement("div");
-        work.className="work";
-        
-        time = document.createElement("input");
-        time.className="name";
-        time.type="text";
-        time.placeholder="시간";
-        
-        n= document.createElement("input");
-        n.className = "name";
-        n.type="text";
-        n.placeholder="이름";
-        
-        b = document.createElement("button");
-        b.className= "smalldel";
-        b.id = "commentdel";
-        b.innerHTML="삭제";
-        b.onclick =function(){
-            if(confirm("진짜로?")){
-                var tar = this.parentNode;
-                tar.parentNode.removeChild(tar);
-            }
-        };
-        
-        w = document.createElement("div");
-        w.className="work";
-        
-        ta = document.createElement("textarea");
-        ta.className = "content";
-        ta.type= "text";
-        ta.placeholder="근무가 특이사항 없습니다.";
-        
-        w.appendChild(ta);
-        work.appendChild(time);
-        work.appendChild(n);
-        work.appendChild(b);
-        work.appendChild(w);
-        this.parentNode.insertBefore(work,this);
-    };
+    else {
+        dateRef.set({
+          TODOS :[]
+        });
+        let li = buildLi("(none)",true);
+        todo_ul.appendChild(li);
+      }
+  });
 }
-//----------end of implementation of adding comment div----------------
+
+function getTodayDocName() {
+  const today = new Date;
+  let month = '' + (today.getMonth() + 1);
+  let day = '' + today.getDate();
+  let year = today.getFullYear();
+
+    if (month.length < 2)
+        month = '0' + month;
+    if (day.length < 2)
+        day = '0' + day;
+
+    return [year, month, day].join('-');
+}
+
+function handleCancel(evt) {
+  evt.preventDefault();
+  const target = evt.srcElement.parentNode;
+  console.log(target);
+  target.parentNode.removeChild(target);
+}
+
+function buildLi(value, isNone) {
+  let new_li = document.createElement("li");
+  new_li.draggable = true;
+  new_li.className = "draggable";
+  new_li.addEventListener("dragstart",handleDragStart);
+  new_li.addEventListener("dragend",handleDragEnd);
+  let input = document.createElement("input");
+  input.value = value;
+  if(isNone) {
+    input.addEventListener("change",(evt)=>{evt.srcElement.classList.remove("none");});
+    input.className="none";
+  }
+  let cancel = document.createElement("div");
+  cancel.className= "cancel";
+  cancel.innerHTML = "X";
+  cancel.addEventListener("click",handleCancel);
+
+  new_li.appendChild(input);
+  new_li.appendChild(cancel);
+
+  return new_li;
+}
+
+function handleDragStart(evt) {
+  evt.srcElement.classList.add("dragging");
+  evt.srcElement.classList.remove("draggable");
+}
+function handleDragEnd(evt) {
+  evt.srcElement.classList.remove("dragging");
+  evt.srcElement.classList.add("draggable");
+}
+
+function handleDrag(evt) {
+  evt.preventDefault();
+  const afterElement = getDragAfterElement(todo_ul,evt.clientY);
+  const dragging = document.querySelector(".dragging");
+  todo_ul.insertBefore(dragging,afterElement);
+
+}
+
+function getDragAfterElement(ul, y) {
+  const draggable_elements = [...ul.querySelectorAll("li.draggable")];
+
+  let result = draggable_elements[0];
+  let closest = Number.NEGATIVE_INFINITY;
+
+  for(el of draggable_elements) {
+    const box = el.getBoundingClientRect();
+    const offset = y-box.top;
+    if(offset<=0 && offset >= closest) {
+      result = el;
+      closest = offset;
+    }
+    else ;
+  }
+
+  return result;
+}

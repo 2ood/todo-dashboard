@@ -1,212 +1,81 @@
-h1,h2,h3,h4,h5,h6,p {padding:0; display:inline-block;}
-a{text-decoration:none; color:white;}
-
-textarea {
-    resize :vertical;
-    margin-top :15px;
-    font-family:'NotoSans-regular';
-    font-size:13px;
+* {
+  margin : 0;
+  padding : 0;
+  box-sizing: border-box;
+  color : black;
+}
+:root {
+  --normal : 20px;
 }
 
-input {
-    background-color:inherit;
-    border-width:0;
-    border-style:none;
-    font-weight:bold;
-    font-size:15px;
-    font-family:'NotoSans-bold';
+@media (max-width :991px) {
+  :root {
+    --normal : 15px;
+  }
+
 }
 
-body {
-    background-color:#eee;
-    font-family : 'NotoSans-regular';
-    margin : 0;
+#content {
+  text-align : center;
+  min-height: 100vh;
+  padding : 10% 20% 0 20%;
+  font-family : 'NotoSan-regular';
 }
 
-.title { 
-    text-align : left;
-    background-color : #111;
-    color : #ccc;
+#content ul {
+  display : block;
+  list-style: none;
 }
 
-#img-pool {width:100%;}
-
-img.show {display:block; width:100%;}
-img.none {display:none;}
-
-
-.container input {
-    background-color:inherit;
-    border-width:0;
-    border-style:none;
-    font-family:'NotoSans-bold';
-    font-weight:bold;
-    font-size:20px;
+#content ul li {
+  display : block;
+  position: relative;
+  border : 1px black solid;
+  line-height: 50px;
+  margin-top : 5%;
+  cursor : move;
 }
 
-.worktimecol {
-    margin:0;
-    background-color:#fff;
-    display:inline-table;
-    padding:10px;
-    width:30%;
-    font-weight:bold;
-    text-align:center;
+.buttons {
+  display : inline-block;
+  font-size : 1.5em;
+  cursor: pointer;
+  width : 50%;
+}
+.buttons:active {
+  color : blue;
+  background-color: #33333355;
+  transition: all .3s ease-in-out;
 }
 
-.workcheckcol {
-    margin:0;
-    background-color:#fff;
-    display:inline-table;
-    padding:10px;
-    width:60%;
-    font-weight:bold;
+.cancel {
+  display: inline-block;
+  position : absolute;
+  right : 0;
+  top : 0;
+  width :30px;
+  height : 100%;
+  font-size: 15px;
+  cursor : pointer;
 }
 
-.column {
-    margin:1%;
-    background-color:#fff;
-    float:left;
-    width:28%;
-    display:block;
-    padding:20px;
+.dragging {
+  display : none;
 }
 
-.workgroup {
-    display: block;
-    min-height : 200px;
-    height: fit-content;
-    align-content : top;
-}
-
-.workgroup-hidden {
-    display: none;
-    min-height : 200px;
-    height: fit-content;
-}
-
-input.name {
-    border-color : white;
-    border-style:none;
-    font-family:'NotoSans-bold';
-    font-weight:bold;
-    font-size:15px;
-    width : 30%
-}
-
-input.checked {
-    text-decoration : "line-through";
-}
-
-input.normal{}
-
-input.todo {
-    border-color : white;
-    border-style : none;
-    font-family:'NotoSans-bold';
-    width:80%;
-    font-size:15px;
-}
-
-input.current {
-    width : 40px;
-    font-size: 15px;
-    text-align :right;
-}
-
-textarea.content{
-    border-color : #eef;
-    width : 100%;
-    display : inline-block;
-    min-height : 75px;
-    font-size : 15px;
-    margin-bottom :15px;
-}
-
-textarea#number { 
-    border-color : #eef;
-    width : 100%;
-    min-height : 200px;
-    height : fit-content;
-    resize : none;
-}
-
-textarea.none { display : none;}
-
-textarea.important { min-height : 500px;}
-
-.footer {
-    display : block; float : left;
-}
-
-button {
-    background-color : skyblue;
-    color : white;
-    border : none;
-    border-radius : 5px;
-    padding : 0.5em;
-    font-family : 'NotoSans-bold';
-    font-weight; : bold;
-}
-
-button.big { 
-    height : 2.5em;
-    width : 5em;
-    font-size : 25px;
-    font-weight : bold;
-}
-
-button.text-fit{ 
-    height : 2.5em;
-    font-size : 13px;
-    font-weight : bold;
-    margin : 5px;
-   
-}
-
-button.push-lock-selected {
-    background-color : skyblue;
-    color : white;
-    height : 2.5em;
-    font-size : 13px;
-    font-weight : bold;
-    margin : 5px;
-}
-
-button.push-lock {
-    background-color : white;
-    color : skyblue;
-    height : 2.5em;
-    font-size : 13px;
-    font-weight : bold;
-    margin : 5px;
-}
-
-button.small { 
-    height : 2em;
-    width : 3em;
-    font-size : 15px;
-}
-
-button.smalldel { 
-    background-color : pink;
-    float : right;
-    height : 2em;
-    width : 3em;
-    font-size : 10px;
-    font-weight : bold;
+#go , #go-today{
+  background-color: white;
+  border : 1px black solid;
+  padding : 2px;
+  margin : 10px;
 }
 
 
-button.smalldel#commentdel {
-    background-color : pink;
-    height : 2em;
-    width : 3em;
-    font-size : 15px;
-}
-
-button.fill, button.add-check {
-    margin-top : 20px;
-    width : 100%;
-    font-size : 20px;
+li input {
+  outline: none;
+  border : none;
+  text-align: center;
+  width : 100%;
+  font-size: var(--normal);
+  vertical-align: center;
 }
