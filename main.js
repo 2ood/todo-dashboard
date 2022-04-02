@@ -1,4 +1,3 @@
-
 const firebaseConfig = {
   apiKey: "AIzaSyCSTx5Z9L4imimR2Hzz7a_Mo9RMisk9vDQ",
   authDomain: "ood-to-do.firebaseapp.com",
@@ -7,6 +6,8 @@ const firebaseConfig = {
   messagingSenderId: "58882087407",
   appId: "1:58882087407:web:48d72fc07389e36e22be1a"
 };
+
+firebase.initializeApp(config);
 const app = firebase.initializeApp(firebaseConfig);
 const firestore = app.firestore();
 const todayis = document.getElementById("today-is");
