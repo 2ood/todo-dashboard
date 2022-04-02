@@ -6,44 +6,67 @@
 }
 :root {
   --normal : 20px;
+  --list-size : 70px;
 }
 
 @media (max-width :991px) {
   :root {
     --normal : 15px;
   }
-
 }
 
 #content {
   text-align : center;
   min-height: 100vh;
-  padding : 10% 20% 0 20%;
+  padding : 10% 10% 0 10%;
   font-family : 'NotoSan-regular';
 }
 
-#content ul {
+banner {
+  width : 100%;
+  display: block;
+}
+
+columns {
+  display: flex;
+}
+
+column {
+  flex : 1;
+  padding-top : 30px;
+}
+
+column > h2:first-of-type {
+  border-bottom: 1px gray solid;
+  margin-bottom: 20px;
+}
+
+column ul {
   display : block;
   list-style: none;
 }
 
-#content ul li {
+column ul li {
   display : block;
   position: relative;
   border : 1px black solid;
-  line-height: 50px;
-  margin-top : 5%;
+  line-height: var(--list-size);
+  min-height : var(--list-size);
   cursor : move;
 }
 
-.buttons {
+button {
   display : inline-block;
   font-size : 1.5em;
   cursor: pointer;
-  width : 50%;
+  width : 100%;
+  min-height : var(--list-size);
+  border : 1px black solid;
+  border-radius: 3px;
 }
-.buttons:active {
-  color : blue;
+
+button:active {
+  color : white;
   background-color: #33333355;
   transition: all .3s ease-in-out;
 }
@@ -61,13 +84,7 @@
 
 .dragging {
   display : none;
-}
-
-#go , #go-today{
-  background-color: white;
-  border : 1px black solid;
-  padding : 2px;
-  margin : 10px;
+  opacity : .5;
 }
 
 

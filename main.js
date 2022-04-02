@@ -1,3 +1,23 @@
+class Work {
+  constructor(content, generatedOn, isDone, isStarted, closedOn) {
+    this.CONTENT = content;
+    this.GENEREATE_DON = generatedOn;
+    this.IS_DONE = isDone;
+    this.IS_STARTED = isStarted;
+    this.CLOSED_ON = closedOn;
+  }
+
+  toJson() {
+    return {
+      CONTENT : this.CONTENT,
+      GENERATED_ON : this.GENERATED_ON,
+      IS_DONE : this.IS_DONE,
+      IS_STARTED : this.IS_STARTED,
+      CLOSED_ON : this.CLOSED_ON
+    };
+  }
+}
+
 const firebaseConfig = {
   apiKey: "AIzaSyCSTx5Z9L4imimR2Hzz7a_Mo9RMisk9vDQ",
   authDomain: "ood-to-do.firebaseapp.com",
@@ -7,30 +27,32 @@ const firebaseConfig = {
   appId: "1:58882087407:web:48d72fc07389e36e22be1a"
 };
 
-firebase.initializeApp(config);
 const app = firebase.initializeApp(firebaseConfig);
 const firestore = app.firestore();
-const todayis = document.getElementById("today-is");
-todayis.innerHTML += getTodayDocName();
-const todayRef = firestore.collection('todo').doc(getTodayDocName());
 const todo_ul = document.getElementById("todo-ul");
-const add = document.getElementById("add");
-const save = document.getElementById("save");
-const go = document.getElementById("go");
-const go_today = document.getElementById("go-today");
-const target_date_input = document.getElementById("target-date");
+const doing_ul = document.getElementById("doing-ul");
+const done_ul = document.getElementById("done-ul");
+const add_buttons = document.querySelectorAll("button.add");
+const MILLISECONDS_OF_5MIN = 5*60*1000;
 
-target_date_input.value = getTodayDocName();
-initializeList(getTodayDocName());
+initializeList(todo_ul, "todo");
+initializeList(doing_ul, "doing");
+initializeList(done_ul, "done");
 
 todo_ul.addEventListener("dragover",handleDrag);
-
-add.addEventListener("click",(evt)=>{
-  todo_ul.appendChild(buildLi("",true));
-});
+doing_ul.addEventListener("dragover",handleDrag);
+done_ul.addEventListener("dragover",handleDrag);
 
 
-save.addEventListener("click",(evt)=>{
+for(a of add_buttons) {
+  a.addEventListener("click",(evt)=>{
+    target_ul = evt.srcElement.parentNode.querySelector("ul:first-of-type");
+    target_ul.appendChild(buildLi("",true));
+  });
+}
+
+document.addEventListener("keydown",(evt)=>{
+  /*
   const array = todo_ul.getElementsByTagName("input");
   let contents_array =[];
   for(let i=0;i<array.length;i++) {
@@ -43,45 +65,26 @@ save.addEventListener("click",(evt)=>{
     save.innerHTML="saved!";
     setTimeout(()=>{save.innerHTML="save";},2000);
   });
+  */
+  setInterval(onSaved,MILLISECONDS_OF_5MIN)
 });
 
 
-go.addEventListener("click",()=>{
-  initializeList(target_date_input.value);
-});
+function initializeList(target_ul, collection) {
 
-go_today.addEventListener("click",()=>{
-  target_date_input.value = getTodayDocName();
-  initializeList(target_date_input.value);
-});
+  target_ul.innerHTML="";
 
-function initializeList(docName) {
-
-  todo_ul.innerHTML="";
-
-  const dateRef = firestore.collection('todo').doc(docName);
-  dateRef.get().then((doc)=>{
-    if(doc.exists) {
-      const arr = doc.data().TODOS;
-      if(arr.length==0) {
-        let li = buildLi("(none)",true);
-        todo_ul.appendChild(li);
+  const collectionRef = firestore.collection(collection);
+  collectionRef.orderBy("GENERATED_ON","desc").get().then((querySnapshot)=>{
+    querySnapshot.forEach((doc) =>{
+      if(doc.exists) {
+          target_ul.appendChild(buildLi(doc.data().CONTENT,false));
       }
-      for(let i=0;i<arr.length;i++) {
-        todo_ul.appendChild(buildLi(arr[i],false));
-      }
-      cancels = todo_ul.getElementsByClassName("cancel");
-      for(c of cancels) {
-        c.addEventListener("click",handleCancel);
-      }
+      });
+    cancels = target_ul.getElementsByClassName("cancel");
+    for(c of cancels) {
+      c.addEventListener("click",handleCancel);
     }
-    else {
-        dateRef.set({
-          TODOS :[]
-        });
-        let li = buildLi("(none)",true);
-        todo_ul.appendChild(li);
-      }
   });
 }
 
@@ -102,7 +105,6 @@ function getTodayDocName() {
 function handleCancel(evt) {
   evt.preventDefault();
   const target = evt.srcElement.parentNode;
-  console.log(target);
   target.parentNode.removeChild(target);
 }
 
@@ -140,10 +142,11 @@ function handleDragEnd(evt) {
 
 function handleDrag(evt) {
   evt.preventDefault();
-  const afterElement = getDragAfterElement(todo_ul,evt.clientY);
+  console.log("drag");
+  const target_ul = todo_ul;
+  const afterElement = getDragAfterElement(target_ul,evt.clientY);
   const dragging = document.querySelector(".dragging");
-  todo_ul.insertBefore(dragging,afterElement);
-
+  target_ul.insertBefore(dragging,afterElement);
 }
 
 function getDragAfterElement(ul, y) {
@@ -163,4 +166,12 @@ function getDragAfterElement(ul, y) {
   }
 
   return result;
+}
+
+function onSaved() {
+
+}
+
+function onSync() {
+  //TODO : implement
 }

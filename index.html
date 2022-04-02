@@ -9,14 +9,30 @@
 </head>
 <body>
   <div id ="content">
-    <h1>Todo list</h1>
-    <p id="today-is">Today is : </p>
-    <input type="date" id="target-date" placeholder="yyyy-m-d"></input><button id="go">Go</button> <button id="go-today">Go Today</button>
-    <ul id="todo-ul">
-    </ul>
-    <div id="buttons"><div id="add" class="buttons">+</div><div id="save" class="buttons">save</div></div>
-    <ul id="done">
-    </ul>
+    <banner>
+      <h1> 2ood's Kanban</h1>
+      <p id="today"></p>
+    </banner>
+    <columns>
+      <column id="todo">
+        <h2>Todo</h2>
+        <ul id="todo-ul">
+        </ul>
+        <button class="add" type="button">+</button>
+      </column>
+      <column id="doing">
+        <h2>Doing</h2>
+        <ul id="doing-ul">
+        </ul>
+        <button class="add" type="button">+</button>
+      </column>
+      <column id="done">
+        <h2>Done</h2>
+        <ul id="done-ul">
+        </ul>
+        <button class="add" type="button">+</button>
+      </column>
+    </columns>
   </div>
 </body>
 <script src="./main.js"></script>
