@@ -292,7 +292,7 @@ function initializeList(target_ul, collection) {
       DETAILS : []
     }
 
-    tq.enqueue(Trail.fromJson(trailJson));
+    tq.enqueue(trailJson);
   }
   //handles drop event of ul
   //TODO : find ul and li informaation
