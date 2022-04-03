@@ -1,13 +1,13 @@
 /* all listening events
-1. create a li
+1. create a li (implemented)
 src : add button
 evt : click
 
-2. edit an input's value
+2. edit an input's value (implemented)
 src : input
 evt : change
 
-3. move a li from one to another ul
+3. move a li from one to another ul (implemented)
 src : li
 evt : dragend
 
@@ -25,7 +25,8 @@ evt : click
 
 //class Work represents each listed works (to do, doing, or done).
 class Work {
-  constructor(content, generated_on, is_done, is_started, is_active, closed_on) {
+  constructor(id, content, generated_on, is_done, is_started, is_active, closed_on) {
+    this.ID = id;
     this.CONTENT = content;
     this.GENEREATE_DON = generated-on;
     this.IS_DONE = is_done;
@@ -36,6 +37,7 @@ class Work {
 
   toJson() {
     return {
+      ID : this.ID,
       CONTENT : this.CONTENT,
       GENERATED_ON : this.GENERATED_ON,
       IS_DONE : this.IS_DONE,
@@ -53,6 +55,9 @@ class Trail {
     this.TIMESTAMP = timestamp;
     this.TARGET_ID = target_id;
     this.DETAILS = details;
+  }
+  static fromJson (json) {
+    return new Trail(json.TYPE, json.TIMESTAMP, json.TARGET_ID,json.DETAILS);
   }
 
   toJson() {
@@ -143,64 +148,82 @@ class FirebaseHandler {
   }
 }
 
+class Util {
+  //returns a string of runtime time
+  static timestamp() {
+    return new Date().toString();
+  }
+
+  //returns a random 9-digit random id
+  static id() {
+    return Math.random().toString(36).substr(2, 9);
+  }
+}
+
+const MILLISECONDS_OF_5MIN = 5*60*1000;
 const fb = new FirebaseHandler();
 const tq = new TrailQueue();
 const todo_ul = document.getElementById("todo-ul");
 const doing_ul = document.getElementById("doing-ul");
 const done_ul = document.getElementById("done-ul");
-const add_buttons = document.querySelectorAll("button.add");
-const MILLISECONDS_OF_5MIN = 5*60*1000;
 
 initializeList(todo_ul, "todo");
 initializeList(doing_ul, "doing");
 initializeList(done_ul, "done");
 
-//TODO : listen to:  ctrl+s(save), ctrl+z(undo), ctrl+q(sync)
-document.addEventListener("keydown",(evt)=>{
-  /*
-  const array = todo_ul.getElementsByTagName("input");
-  let contents_array =[];
-  for(let i=0;i<array.length;i++) {
-    if(!array[i].classList.contains("none"))contents_array.push(array[i].value);
+//listen to:  ctrl+s(save), ctrl+z(undo), ctrl+q(sync)
+document.addEventListener("keydown",
+(evt) => {
+  if(evt.ctrlKey) {
+    if(evt.key=="s") {
+      evt.preventDefault();
+      evt.stopPropagation();
+      onSaved();
+    }
+    else if(evt.key=="z") {
+      evt.preventDefault();
+      evt.stopPropagation();
+      onUndo();
+    }
+    else if(evt.key=="q") {
+      evt.preventDefault();
+      evt.stopPropagation();
+      onSync();
+    }
   }
-  targetRef = firestore.collection('todo').doc(target_date_input.value);
-  targetRef.update({
-    TODOS : contents_array
-  }).then(()=>{
-    save.innerHTML="saved!";
-    setTimeout(()=>{save.innerHTML="save";},2000);
-  });
-  */
 });
 
 //initalizes column's ul tag
 //loads work objects and appends them to the target ul
+//TODO : add eventlisteners for making new trail
 function initializeList(target_ul, collection) {
-  //returns the add button for a column
-  function buildAddButton(){
-    const result = document.createElement("button");
-    result.type = "button";
-    result.className = "add";
-    result.addEventListener("click",(evt)=>{
-      target_ul = evt.srcElement.parentNode.querySelector("ul:first-of-type");
-      target_ul.appendChild(buildLi("",true));
-    });
 
-    return result;
-  }
   //returns a li object of input.value = value
   //isNone is a boolean for distinguishing created but not used li.
   //the li  with isNone=true are not synced to the firestore.
-  function buildLi(value, isNone) {
+  function buildLi(value, id, isNone) {
     //handles dragstart event of lis
     function handleDragStart(evt) {
-      evt.srcElement.classList.add("dragging");
-      evt.srcElement.classList.remove("draggable");
+      const src = evt.srcElement;
+      src.classList.add("dragging");
+      src.setAttribute("from",src.parentNode.id);
+      src.classList.remove("draggable");
     }
     //handles dragend event of lis
     function handleDragEnd(evt) {
-      evt.srcElement.classList.remove("dragging");
-      evt.srcElement.classList.add("draggable");
+      const src = evt.srcElement;
+
+      const trailJson = {
+        TYPE : "MOVE",
+        TIMESTAMP : Util.timestamp(),
+        TARGET_ID : src.id,
+        DETAILS : {
+          FROM : src.getAttribute("from"),
+          TO : src.parentNode.id,
+        }
+      }
+      tq.enqueue(trailJson);
+      src.removeAttribute("from");
     }
     //handles click event of cancel buttons
     function handleCancel(evt) {
@@ -209,15 +232,33 @@ function initializeList(target_ul, collection) {
       target.parentNode.removeChild(target);
     }
 
+
     //make a DOM li object
     let new_li = document.createElement("li");
     new_li.draggable = true;
     new_li.className = "draggable";
+    new_li.id=id;
     new_li.addEventListener("dragstart",handleDragStart);
     new_li.addEventListener("dragend",handleDragEnd);
 
+
     let input = document.createElement("input");
+    input.placeholder = value;
     input.value = value;
+    input.addEventListener("change",(evt)=>{
+      const src = evt.srcElement;
+      const trailJson = {
+        TYPE : "EDIT",
+        TIMESTAMP : Util.timestamp(),
+        TARGET_ID : src.parentNode.id,
+        DETAILS : {
+          FROM : src.placeholder,
+          TO : src.value
+        }
+      }
+      tq.enqueue(trailJson);
+      src.placeholder = src.value;
+    });
 
     if(isNone) {
       input.addEventListener("change",(evt)=>{evt.srcElement.classList.remove("none");});
@@ -236,31 +277,38 @@ function initializeList(target_ul, collection) {
   }
   //handles drag event of ul tags
   function handleDrag(evt) {
-    //finds where the dragging object is hovering before
-    function getDragAfterElement(ul, y) {
-      const draggable_elements = [...ul.querySelectorAll("li.draggable")];
+    evt.preventDefault();
+  }
+  //handles click event of add button
+  function handleAdd(evt) {
+    const target_ul = evt.srcElement.parentNode.querySelector("ul:first-of-type");
+    const id = Util.id();
+    target_ul.appendChild(buildLi("",id,true));
 
-      let result = draggable_elements[0];
-      let closest = Number.NEGATIVE_INFINITY;
-
-      for(el of draggable_elements) {
-        const box = el.getBoundingClientRect();
-        const offset = y-box.top;
-        if(offset<=0 && offset >= closest) {
-          result = el;
-          closest = offset;
-        }
-      }
-
-      return result;
+    const trailJson = {
+      TYPE : "CREATE",
+      TIMESTAMP : Util.timestamp(),
+      TARGET_ID : id,
+      DETAILS : []
     }
 
-    evt.preventDefault();
-    console.log("drag");
-    const target_ul = todo_ul;
-    const afterElement = getDragAfterElement(target_ul,evt.clientY);
+    tq.enqueue(Trail.fromJson(trailJson));
+  }
+  //handles drop event of ul
+  //TODO : find ul and li informaation
+  function handleDrop(evt) {
+    let target = evt.toElement;
     const dragging = document.querySelector(".dragging");
-    target_ul.insertBefore(dragging,afterElement);
+
+    for(;target!=document;) {
+      if(target.tagName=="UL") {
+        target.insertBefore(dragging,null);
+        dragging.classList.remove("dragging");
+        dragging.classList.add("draggable");
+        break;
+      }
+      else target = target.parentNode;
+    }
   }
 
   target_ul.innerHTML="";
@@ -268,16 +316,19 @@ function initializeList(target_ul, collection) {
   const collectionRef = fb.firestore.collection(collection);
   collectionRef.orderBy("GENERATED_ON","desc").get().then((querySnapshot)=>{
     querySnapshot.forEach((doc) =>{
-      if(doc.exists) target_ul.appendChild(buildLi(doc.data().CONTENT,false));
+      const docs = doc.data();
+      if(doc.exists) target_ul.appendChild(buildLi(docs.CONTENT,docs.ID,false));
     });
-    target_ul.parentNode.appendChild(buildAddButton());
+    const add_button = target_ul.parentNode.querySelector("button:first-of-type");
+    add_button.addEventListener("click",handleAdd);
+    target_ul.addEventListener("dragover",handleDrag);
+    target_ul.addEventListener("drop",handleDrop);
   });
-
-  target_ul.addEventListener("dragover",handleDrag);
 }
 
 //returns a string of today's date in format yyyy-mm-dd
-function getTodayDocName() {
+//deprecated
+function getTodayFormatted() {
   const today = new Date;
   let month = '' + (today.getMonth() + 1);
   let day = '' + today.getDate();
@@ -294,8 +345,16 @@ function getTodayDocName() {
 
 //:TODO : implement
 function onSaved() {
+  console.log("saved : ", Util.timestamp());
+}
+
+//:TODO : implement
+function onUndo() {
+  console.log("undo : ",Util.timestamp());
 }
 
 //TODO : implement
 function onSync() {
+  console.log("started syncing : ",Util.timestamp());
+  console.log("successfully synced : ",Util.timestamp());
 }

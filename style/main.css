@@ -6,7 +6,10 @@
 }
 :root {
   --normal : 20px;
-  --list-size : 70px;
+  --list-height : 70px;
+  --list-min-height : 300px;
+  --list-margin : 10px;
+  --accent : skyblue;
 }
 
 @media (max-width :991px) {
@@ -34,6 +37,7 @@ columns {
 column {
   flex : 1;
   padding-top : 30px;
+  position: relative;
 }
 
 column > h2:first-of-type {
@@ -44,31 +48,51 @@ column > h2:first-of-type {
 column ul {
   display : block;
   list-style: none;
+  min-height: var(--list-min-height);
 }
 
 column ul li {
   display : block;
   position: relative;
-  border : 1px black solid;
-  line-height: var(--list-size);
-  min-height : var(--list-size);
+  border : 1px gray solid;
+  border-radius: 3px;
+  line-height: var(--list-height);
+  min-height : var(--list-height);
   cursor : move;
+  margin-bottom : var(--list-margin);
+  transition: all .3s ease-in-out;
 }
 
-button {
-  display : inline-block;
+column ul li:hover {
+  background-color: #33333311;
+  transition: all .3s ease-in-out;
+}
+
+button.add {
+  display :inline-block;
+  position: absolute;
+  right : 0;
+  top : 0;
   font-size : 1.5em;
+  border : none;
   cursor: pointer;
-  width : 100%;
-  min-height : var(--list-size);
-  border : 1px black solid;
-  border-radius: 3px;
+  width : 20px;
+  height : 20px;
+  min-height : var(--list-height);
+  color : #333333;
+  background-color: transparent;
+  transition: all .1s ease-in;
+}
+
+button:hover {
+  color : var(--accent);
+  transition: all .1s ease-in-out;
 }
 
 button:active {
-  color : white;
-  background-color: #33333355;
-  transition: all .3s ease-in-out;
+  color : #33333333;
+  background-color: transparent;
+  transition : all 0 ease-in;
 }
 
 .cancel {
@@ -83,7 +107,6 @@ button:active {
 }
 
 .dragging {
-  display : none;
   opacity : .5;
 }
 
@@ -95,4 +118,5 @@ li input {
   width : 100%;
   font-size: var(--normal);
   vertical-align: center;
+  background-color: transparent;
 }
