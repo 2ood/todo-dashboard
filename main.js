@@ -208,22 +208,21 @@ function initializeList(target_ul, collection) {
       src.classList.add("dragging");
       src.setAttribute("from",src.parentNode.id);
       src.classList.remove("draggable");
+
+      const droppables = document.getElementsByClassName("droppable");
+      for(d of droppables) d.classList.add("colored-drop-point");
     }
     //handles dragend event of lis
     function handleDragEnd(evt) {
       const src = evt.srcElement;
 
-      const trailJson = {
-        TYPE : "MOVE",
-        TIMESTAMP : Util.timestamp(),
-        TARGET_ID : src.id,
-        DETAILS : {
-          FROM : src.getAttribute("from"),
-          TO : src.parentNode.id,
-        }
-      }
-      tq.enqueue(trailJson);
       src.removeAttribute("from");
+
+      src.classList.remove("dragging");
+      src.classList.add("draggable");
+
+      const droppables = document.getElementsByClassName("droppable");
+      for(d of droppables) d.classList.remove("colored-drop-point");
     }
     //handles click event of cancel buttons
     function handleCancel(evt) {
@@ -301,13 +300,23 @@ function initializeList(target_ul, collection) {
     const dragging = document.querySelector(".dragging");
 
     for(;target!=document;) {
-      if(target.tagName=="UL") {
+      if(target.classList.contains("droppable")) {
         target.insertBefore(dragging,null);
-        dragging.classList.remove("dragging");
-        dragging.classList.add("draggable");
+        const trailJson = {
+          TYPE : "MOVE",
+          TIMESTAMP : Util.timestamp(),
+          TARGET_ID : dragging.id,
+          DETAILS : {
+            FROM : dragging.getAttribute("from"),
+            TO : target.id,
+          }
+        }
+        tq.enqueue(trailJson);
         break;
       }
-      else target = target.parentNode;
+      else {
+        target = target.parentNode;
+      }
     }
   }
 

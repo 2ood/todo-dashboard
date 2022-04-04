@@ -110,6 +110,11 @@ button:active {
   opacity : .5;
 }
 
+.colored-drop-point {
+  background-color: var(--accent);
+  transition: all .1s ease-in-out;
+}
+
 
 li input {
   outline: none;
