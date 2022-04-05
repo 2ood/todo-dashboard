@@ -273,6 +273,7 @@ const done_ul = document.getElementById("done-ul");
 initializeList(todo_ul, "todo");
 initializeList(doing_ul, "doing");
 initializeList(done_ul, "done");
+loadActiveLi();
 
 //listen to:  ctrl+s(save), ctrl+z(undo), ctrl+q(sync)
 document.addEventListener("keydown",
@@ -298,93 +299,9 @@ document.addEventListener("keydown",
 
 //initalizes column's ul tag
 //loads work objects and appends them to the target ul
-function initializeList(target_ul, collection) {
-
-  //returns a li object of input.value = value
-  //isNone is a boolean for distinguishing created but not used li.
-  //the li  with isNone=true are not synced to the firestore.
-  function buildLi(value, id, isNone) {
-    //handles dragstart event of lis
-    function handleDragStart(evt) {
-      const src = evt.srcElement;
-      src.classList.add("dragging");
-      src.setAttribute("from",src.parentNode.id);
-      src.classList.remove("draggable");
-
-      const droppables = document.getElementsByClassName("droppable");
-      for(d of droppables) d.classList.add("colored-drop-point");
-    }
-    //handles dragend event of lis
-    function handleDragEnd(evt) {
-      const src = evt.srcElement;
-
-      src.removeAttribute("from");
-
-      src.classList.remove("dragging");
-      src.classList.add("draggable");
-
-      const droppables = document.getElementsByClassName("droppable");
-      for(d of droppables) d.classList.remove("colored-drop-point");
-    }
-    //handles click event of cancel buttons
-    function handleCancel(evt) {
-      evt.preventDefault();
-      const target = evt.srcElement.parentNode;
-
-      const trailJson = {
-        TYPE : "DELETE",
-        TIMESTAMP : Util.timestamp(),
-        TARGET_ID : target.id,
-        DETAILS : {
-          FROM : target.parentNode.id
-        }
-      }
-      tq.enqueue(trailJson);
-
-      target.parentNode.removeChild(target);
-    }
-
-    let new_li = document.createElement("li");
-    new_li.draggable = true;
-    new_li.className = "draggable";
-    new_li.id=id;
-    new_li.addEventListener("dragstart",handleDragStart);
-    new_li.addEventListener("dragend",handleDragEnd);
+function initializeList(target_ul, statusName) {
 
 
-    let input = document.createElement("input");
-    input.placeholder = value;
-    input.value = value;
-    input.addEventListener("change",(evt)=>{
-      const src = evt.srcElement;
-      const trailJson = {
-        TYPE : "EDIT",
-        TIMESTAMP : Util.timestamp(),
-        TARGET_ID : src.parentNode.id,
-        DETAILS : {
-          FROM : src.placeholder,
-          TO : src.value
-        }
-      }
-      tq.enqueue(trailJson);
-      src.placeholder = src.value;
-    });
-
-    if(isNone) {
-      input.addEventListener("change",(evt)=>{evt.srcElement.classList.remove("none");});
-      input.className="none";
-    }
-
-    let cancel = document.createElement("div");
-    cancel.className= "cancel";
-    cancel.innerHTML = "X";
-    cancel.addEventListener("click",handleCancel);
-
-    new_li.appendChild(input);
-    new_li.appendChild(cancel);
-
-    return new_li;
-  }
   //handles drag event of ul tags
   function handleDrag(evt) {
     evt.preventDefault();
@@ -433,19 +350,114 @@ function initializeList(target_ul, collection) {
     }
   }
 
-  target_ul.innerHTML="";
-
-  const collectionRef = fb.firestore.collection(collection);
-  collectionRef.orderBy("GENERATED_ON","desc").get().then((querySnapshot)=>{
-    querySnapshot.forEach((doc) =>{
-      const docs = doc.data();
-      if(doc.exists) target_ul.appendChild(buildLi(docs.CONTENT,docs.ID,false));
-    });
-    const add_button = target_ul.parentNode.querySelector("button:first-of-type");
-    add_button.addEventListener("click",handleAdd);
+    target_ul.innerHTML="";
     target_ul.addEventListener("dragover",handleDrag);
     target_ul.addEventListener("drop",handleDrop);
+
+    const add_button = target_ul.parentNode.querySelector("button:first-of-type");
+    add_button.addEventListener("click",handleAdd);
+}
+
+function loadActiveLi() {
+
+  const collectionRef = fb.firestore.collection("active");
+  collectionRef.orderBy("GENERATED_ON","desc").get().then((querySnapshot)=>{
+    querySnapshot.forEach((doc) =>{
+      if(doc.exists) {
+        const docs = doc.data();
+        let target_ul ="";
+        if(!docs.IS_STARTED) target_ul = todo_ul;
+        else if(docs.IS_DONE) target_ul = done_ul;
+        target_ul.appendChild(buildLi(docs.CONTENT,docs.ID,false));
+      }
+    });
   });
+}
+
+//returns a li object of input.value = value
+//isNone is a boolean for distinguishing created but not used li.
+//the li  with isNone=true are not synced to the firestore.
+function buildLi(value, id, isNone) {
+  //handles dragstart event of lis
+  function handleDragStart(evt) {
+    const src = evt.srcElement;
+    src.classList.add("dragging");
+    src.setAttribute("from",src.parentNode.id);
+    src.classList.remove("draggable");
+
+    const droppables = document.getElementsByClassName("droppable");
+    for(d of droppables) d.classList.add("colored-drop-point");
+  }
+  //handles dragend event of lis
+  function handleDragEnd(evt) {
+    const src = evt.srcElement;
+
+    src.removeAttribute("from");
+
+    src.classList.remove("dragging");
+    src.classList.add("draggable");
+
+    const droppables = document.getElementsByClassName("droppable");
+    for(d of droppables) d.classList.remove("colored-drop-point");
+  }
+  //handles click event of cancel buttons
+  function handleCancel(evt) {
+    evt.preventDefault();
+    const target = evt.srcElement.parentNode;
+
+    const trailJson = {
+      TYPE : "DELETE",
+      TIMESTAMP : Util.timestamp(),
+      TARGET_ID : target.id,
+      DETAILS : {
+        FROM : target.parentNode.id
+      }
+    }
+    tq.enqueue(trailJson);
+
+    target.parentNode.removeChild(target);
+  }
+
+  let new_li = document.createElement("li");
+  new_li.draggable = true;
+  new_li.className = "draggable";
+  new_li.id=id;
+  new_li.addEventListener("dragstart",handleDragStart);
+  new_li.addEventListener("dragend",handleDragEnd);
+
+
+  let input = document.createElement("input");
+  input.placeholder = value;
+  input.value = value;
+  input.addEventListener("change",(evt)=>{
+    const src = evt.srcElement;
+    const trailJson = {
+      TYPE : "EDIT",
+      TIMESTAMP : Util.timestamp(),
+      TARGET_ID : src.parentNode.id,
+      DETAILS : {
+        FROM : src.placeholder,
+        TO : src.value
+      }
+    }
+    tq.enqueue(trailJson);
+    src.placeholder = src.value;
+  });
+
+  if(isNone) {
+    input.addEventListener("change",(evt)=>{evt.srcElement.classList.remove("none");});
+    input.className="none";
+  }
+
+  let cancel = document.createElement("div");
+  cancel.className= "cancel";
+  cancel.innerHTML = "X";
+  cancel.addEventListener("click",handleCancel);
+
+  new_li.appendChild(input);
+  new_li.appendChild(cancel);
+
+  return new_li;
 }
 
 //returns a string of today's date in format yyyy-mm-dd
