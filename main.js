@@ -1,19 +1,69 @@
 /* all listening events
 1. create a li (implemented)
-src : add button
-evt : click
+  src : add button
+  evt : click
+
+  trailJson = {
+    TYPE : "CREATE",
+    TIMESTAMP : Util.timestamp(),
+    TARGET_ID : id,
+    DETAILS : {
+      CONTENT : "",
+      TO : target_ul.id
+    }
+  }
 
 2. edit an input's value (implemented)
-src : input
-evt : change
+  src : input
+  evt : change
+
+  trailJson = {
+    TYPE : "EDIT",
+    TIMESTAMP : Util.timestamp(),
+    TARGET_ID : src.parentNode.id,
+    DETAILS : {
+      FROM : src.placeholder,
+      TO : src.value
+    }
+  }
+
 
 3. move a li from one to another ul (implemented)
-src : li
-evt : dragend
+  src : li
+  evt : dragend
 
-4. delete a li
-src : cancel button
-evt : click
+  trailJson = {
+    TYPE : "MOVE",
+    TIMESTAMP : Util.timestamp(),
+    TARGET_ID : dragging.id,
+    DETAILS : {
+      FROM : dragging.getAttribute("from"),
+      TO : target.id,
+    }
+  }
+
+4. delete a li (implemented)
+  src : cancel button
+  evt : click
+
+  trailJson = {
+    TYPE : "DELETE",
+    TIMESTAMP : Util.timestamp(),
+    TARGET_ID : target.id,
+    DETAILS : {
+      FROM : target.parentNode.id
+    }
+  }
+
+4. archive a done_ul
+  evt : click
+
+  trailJson = {
+    TYPE : "ARCHIVE",
+    TIMESTAMP : Util.timestamp(),
+    TARGET_ID : target.id,
+    DETAILS : {}
+  }
 
 
 1 <-> 4
@@ -28,11 +78,15 @@ class Work {
   constructor(id, content, generated_on, is_done, is_started, is_active, closed_on) {
     this.ID = id;
     this.CONTENT = content;
-    this.GENEREATE_DON = generated-on;
+    this.GENEREATED_ON = generated_on;
     this.IS_DONE = is_done;
     this.IS_STARTED = is_started;
     this.IS_ACTIVE = is_active;
     this.CLOSED_ON = closed_on;
+  }
+
+  static fromJson(json) {
+    return new Work(json.ID, json.CONENT, json.GENERATED_ON, json.IS_DONE, json.IS_STARTED,json.IS_ACTIVE,json.CLOSED_ON);
   }
 
   toJson() {
@@ -67,6 +121,7 @@ class Trail {
       TARGET_ID : this.TARGET_ID,
       DETAILS : this.DETAILS
     };
+
   }
 }
 
@@ -92,21 +147,16 @@ class TrailQueue {
   //analyze queued trails and compresses them to minimal steps
   //build -> update -> delete
   //TODO : implement
-  parse(trail_array) {
+  parse() {
   }
 
   //parses and queues all trails
   //buffered version of method save
-  saveAll(trail_array) {
-    const parsed_array = parse(trail_array);
+  saveAll() {
+    const parsed_array = parse(this._arr);
     parsed_array.forEach((trail)=>{
-        this.save(trail);
+        this.enqueue(trail);
     });
-  }
-
-  //queues a trail
-  save(trail) {
-    this.target_queue.enqueue(trail);
   }
 }
 
@@ -126,32 +176,85 @@ class FirebaseHandler {
     this.firestore = this.app.firestore();
   }
 
-  //TODO : implement
   //only used by sync
   _create(trail) {
+    let result = {code : 406, message : "Not acceptible"};
+    if(trail.TYPE!="CREATE") return result;
 
+    const to = trail.DETAILS.TO ;
+    const workJson = {
+      ID : trail.TARGET_ID,
+      CONTENT : trail.DETAILS.CONTENT,
+      GENERATED_ON : trail.TIMESTAMP,
+      IS_DONE : (to == "done-ul"),
+      IS_STARTED : (to == "doing-ul" || to=="done-ul"),
+      IS_ACTIVE : true,
+      CLOSED_ON : (to == "done-ul")?trail.TIMESATMP : Util.nullTime()
+    };
+
+    this.firestore.collection(workJson.IS_ACTIVE?"active":"archived").doc(workJson.ID).set(workJson).then(()=>{
+      result = {code: 200, message : "OK"};
+    }).catch((error) => {
+      result = {code : 400, message : error.message};
+    });
+    return result;
+  }
+
+  //TODO : implement
+  //only used by sync
+  _move(trail) {
+    let result = {code : 406, message : "Not acceptible"};
+
+    return result;
   }
 
   //TODO : implement
   //only used by sync
   _update(trail) {
+    let result = {code : 406, message : "Not acceptible"};
+
+    return result;
   }
 
   //TODO : implement
   //only used by sync
   _delete(trail) {
+    let result = {code : 406, message : "Not acceptible"};
+
+    return result;
   }
 
   //edit the database according to parsed trails.
 
   sync(parsed_trail_array) {
+    let result = {code : 406, message : "Not acceptible"};
+    console.log(parsed_trail_array);
+      for(let i=0; i<parsed_trail_array.length;i++) {
+        let trailJson = parsed_trail_array[i];
+        if(trailJson.TYPE = "CREATE") {result = this._create(trailJson);}
+        else if(trailJson.TYPE = "MOVE") {result = this._move(trailJson);}
+        else if(trailJson.TYPE = "EDIT") {result = this._update(trailJson);}
+        else if(trailJson.TYPE = "DELETE") {result = this._delete(trailJson);}
+        else {
+          result = {code : 400, message : "Unknown trail type"};
+          return result;
+        }
+
+        if(result.code!=200) break;
+      }
+    return result;
   }
 }
 
 class Util {
   //returns a string of runtime time
   static timestamp() {
-    return new Date().toString();
+    return new Date();
+  }
+  static nullTime() {
+    let result = new Date();
+    result.setTime(0);
+    return result;
   }
 
   //returns a random 9-digit random id
@@ -195,7 +298,6 @@ document.addEventListener("keydown",
 
 //initalizes column's ul tag
 //loads work objects and appends them to the target ul
-//TODO : add eventlisteners for making new trail
 function initializeList(target_ul, collection) {
 
   //returns a li object of input.value = value
@@ -228,11 +330,20 @@ function initializeList(target_ul, collection) {
     function handleCancel(evt) {
       evt.preventDefault();
       const target = evt.srcElement.parentNode;
+
+      const trailJson = {
+        TYPE : "DELETE",
+        TIMESTAMP : Util.timestamp(),
+        TARGET_ID : target.id,
+        DETAILS : {
+          FROM : target.parentNode.id
+        }
+      }
+      tq.enqueue(trailJson);
+
       target.parentNode.removeChild(target);
     }
 
-
-    //make a DOM li object
     let new_li = document.createElement("li");
     new_li.draggable = true;
     new_li.className = "draggable";
@@ -288,13 +399,15 @@ function initializeList(target_ul, collection) {
       TYPE : "CREATE",
       TIMESTAMP : Util.timestamp(),
       TARGET_ID : id,
-      DETAILS : []
+      DETAILS : {
+        CONTENT : "",
+        TO : target_ul.id
+      }
     }
 
     tq.enqueue(trailJson);
   }
   //handles drop event of ul
-  //TODO : find ul and li informaation
   function handleDrop(evt) {
     let target = evt.toElement;
     const dragging = document.querySelector(".dragging");
@@ -351,9 +464,8 @@ function getTodayFormatted() {
     return [year, month, day].join('-');
 }
 
-
-//:TODO : implement
 function onSaved() {
+  tq.parse();
   console.log("saved : ", Util.timestamp());
 }
 
@@ -362,8 +474,10 @@ function onUndo() {
   console.log("undo : ",Util.timestamp());
 }
 
-//TODO : implement
 function onSync() {
   console.log("started syncing : ",Util.timestamp());
-  console.log("successfully synced : ",Util.timestamp());
+  tq.parse();
+  let sync_result = fb.sync(tq.toArray());
+  if(sync_result.code == 200) console.log("successfully synced : ",Util.timestamp());
+  else { console.log("Error in sync : ",Util.timestamp(),sync_result.message); }
 }
