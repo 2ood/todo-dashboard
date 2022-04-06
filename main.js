@@ -368,6 +368,7 @@ function loadActiveLi() {
         let target_ul ="";
         if(!docs.IS_STARTED) target_ul = todo_ul;
         else if(docs.IS_DONE) target_ul = done_ul;
+        else target_ul = doing_ul;
         target_ul.appendChild(buildLi(docs.CONTENT,docs.ID,false));
       }
     });
