@@ -189,7 +189,7 @@ class FirebaseHandler {
       IS_DONE : (to == "done-ul"),
       IS_STARTED : (to == "doing-ul" || to=="done-ul"),
       IS_ACTIVE : true,
-      CLOSED_ON : (to == "done-ul")?trail.TIMESATMP : Util.nullTime()
+      CLOSED_ON : (to == "done-ul")?trail.TIMESTAMP : Util.nullTime()
     };
 
     this.firestore.collection(workJson.IS_ACTIVE?"active":"archived").doc(workJson.ID).set(workJson).then(()=>{
