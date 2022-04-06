@@ -13,7 +13,7 @@
     }
   }
 
-2. edit an input's value (implemented)
+2-1. edit an input's value (implemented)
   src : input
   evt : change
 
@@ -28,7 +28,7 @@
   }
 
 
-3. move a li from one to another ul (implemented)
+2-2. move a li from one to another ul (implemented)
   src : li
   evt : dragend
 
@@ -42,7 +42,17 @@
     }
   }
 
-4. delete a li (implemented)
+2-3. archive a done_ul
+  evt : click
+
+  trailJson = {
+    TYPE : "ARCHIVE",
+    TIMESTAMP : Util.timestamp(),
+    TARGET_ID : target.id,
+    DETAILS : {}
+  }
+
+5. delete a li (implemented)
   src : cancel button
   evt : click
 
@@ -55,15 +65,7 @@
     }
   }
 
-4. archive a done_ul
-  evt : click
 
-  trailJson = {
-    TYPE : "ARCHIVE",
-    TIMESTAMP : Util.timestamp(),
-    TARGET_ID : target.id,
-    DETAILS : {}
-  }
 
 
 1 <-> 4
@@ -200,18 +202,39 @@ class FirebaseHandler {
     return result;
   }
 
-  //TODO : implement
-  //only used by sync
-  _move(trail) {
-    let result = {code : 406, message : "Not acceptible"};
-
-    return result;
-  }
 
   //TODO : implement
   //only used by sync
   _update(trail) {
     let result = {code : 406, message : "Not acceptible"};
+
+    let updateJson={};
+    let is_active = true;
+
+    if(trail.TYPE=="MOVE") {
+      updateJson = {
+        IS_DONE : (to == "done-ul"),
+        IS_STARTED : (to == "doing-ul" || to=="done-ul"),
+        CLOSED_ON : (to == "done-ul")?trail.TIMESTAMP : Util.nullTime()
+      }
+    }
+    else if (trail.TYPE=="EDIT") {
+      updateJson = {
+        CONTENT : trail.DETAILS.TO
+      }
+    }
+    else if (trail.TYPE=="ARCHIVE") {
+      updateJson = {
+        IS_ACTIVE : false
+      }
+    }
+    else return result;
+
+    this.firestore.collection(is_active?"active":"archived").doc(workJson.ID).update(updateJson).then(()=>{
+      result = {code: 200, message : "OK"};
+    }).catch((error) => {
+      result = {code : 400, message : error.message};
+    });
 
     return result;
   }
@@ -220,6 +243,16 @@ class FirebaseHandler {
   //only used by sync
   _delete(trail) {
     let result = {code : 406, message : "Not acceptible"};
+    if(trail.TYPE!="DELETE") return result;
+
+    return result;
+  }
+
+  //TODO : implement
+  //only used by sync
+  _archive(trail) {
+    let result = {code : 406, message : "Not acceptible"};
+    if(trail.TYPE!="ARCHIVE") return result;
 
     return result;
   }
@@ -232,8 +265,7 @@ class FirebaseHandler {
       for(let i=0; i<parsed_trail_array.length;i++) {
         let trailJson = parsed_trail_array[i];
         if(trailJson.TYPE = "CREATE") {result = this._create(trailJson);}
-        else if(trailJson.TYPE = "MOVE") {result = this._move(trailJson);}
-        else if(trailJson.TYPE = "EDIT") {result = this._update(trailJson);}
+        else if(trailJson.TYPE = "MOVE" || trailJson.TYPE = "EDIT" || trailJson.TYPE = "ARCHIVE") {result = this._update(trailJson);}
         else if(trailJson.TYPE = "DELETE") {result = this._delete(trailJson);}
         else {
           result = {code : 400, message : "Unknown trail type"};
@@ -366,9 +398,11 @@ function loadActiveLi() {
       if(doc.exists) {
         const docs = doc.data();
         let target_ul ="";
+
         if(!docs.IS_STARTED) target_ul = todo_ul;
         else if(docs.IS_DONE) target_ul = done_ul;
         else target_ul = doing_ul;
+
         target_ul.appendChild(buildLi(docs.CONTENT,docs.ID,false));
       }
     });
