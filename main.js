@@ -180,7 +180,7 @@ class FirebaseHandler {
 
   //only used by sync
   _create(trail) {
-    let result = {code : 406, message : "Not acceptible"};
+    let result = {code : 406, message : "Not acceptible in create method", trail : trail};
     if(trail.TYPE!="CREATE") return result;
 
     const to = trail.DETAILS.TO ;
@@ -194,19 +194,19 @@ class FirebaseHandler {
       CLOSED_ON : (to == "done-ul")?trail.TIMESTAMP : Util.nullTime()
     };
 
-    this.firestore.collection(workJson.IS_ACTIVE?"active":"archived").doc(workJson.ID).set(workJson).then(()=>{
-      result = {code: 200, message : "OK"};
+    const target_ref = this.firestore.collection(workJson.IS_ACTIVE?"active":"archived").doc(workJson.ID);
+
+    target_ref.set(workJson).then(()=>{
+      result = {code: 200, message : "OK", trail : trail};
     }).catch((error) => {
-      result = {code : 400, message : error.message};
+      result = {code : 400, message : error.message, trail : trail};
     });
     return result;
   }
 
-
-  //TODO : implement
   //only used by sync
   _update(trail) {
-    let result = {code : 406, message : "Not acceptible"};
+    let result = {code : 406, message : "Not acceptible in update method", trail : trail};
 
     let updateJson={};
     let is_active = true;
@@ -230,19 +230,26 @@ class FirebaseHandler {
     }
     else return result;
 
-    this.firestore.collection(is_active?"active":"archived").doc(workJson.ID).update(updateJson).then(()=>{
-      result = {code: 200, message : "OK"};
-    }).catch((error) => {
-      result = {code : 400, message : error.message};
-    });
+    const target_ref = this.firestore.collection(is_active?"active":"archived").doc(trail.TARGET_ID);
+    target_ref.update(updateJson).then(()=>{
+      result = {code: 200, message : "OK", trail : trail};
 
-    return result;
+      if(trail.TYPE=="ARCHIVE") {
+        result = _archive(trail);
+      }
+
+      return result;
+
+    }).catch((error) => {
+      result = {code : 400, message : error.message, trail : trail};
+      return result;
+    });
   }
 
   //TODO : implement
   //only used by sync
   _delete(trail) {
-    let result = {code : 406, message : "Not acceptible"};
+    let result = {code : 406, message : "Not acceptible in delete method", trail : trail};
     if(trail.TYPE!="DELETE") return result;
 
     return result;
@@ -251,8 +258,27 @@ class FirebaseHandler {
   //TODO : implement
   //only used by sync
   _archive(trail) {
-    let result = {code : 406, message : "Not acceptible"};
+    let result = {code : 406, message : "Not acceptible in archive method"};
     if(trail.TYPE!="ARCHIVE") return result;
+
+    const reference_ref = this.firestore.collection("active").doc(trail.TARGET_ID);
+    const target_ref = this.firestore.collection("archive").doc(trail.TARGET_ID);
+
+    referece_ref.get().then((docRef)=>{
+      if(docRef.exists){
+        let referece_doc = docRef.data();
+        target_ref.set(referece_doc).then(()=>{
+          referece_ref.delete().then(()=>{
+              result = {code: 200, message : "OK", trail : trail};
+          }).catch((error) => {
+            result = {code : 400, message : error.message, trail : trail};
+          });
+        }).catch((error) => {
+          result = {code : 400, message : error.message, trail : trail};
+        });
+      }
+    });
+
 
     return result;
   }
@@ -260,18 +286,18 @@ class FirebaseHandler {
   //edit the database according to parsed trails.
 
   sync(parsed_trail_array) {
-    let result = {code : 406, message : "Not acceptible"};
-    console.log(parsed_trail_array);
+    let result = {code : 406, message : "Not acceptible", trail : null};
+    
       for(let i=0; i<parsed_trail_array.length;i++) {
         let trailJson = parsed_trail_array[i];
-        if(trailJson.TYPE = "CREATE") {result = this._create(trailJson);}
-        else if(trailJson.TYPE = "MOVE" || trailJson.TYPE = "EDIT" || trailJson.TYPE = "ARCHIVE") {result = this._update(trailJson);}
-        else if(trailJson.TYPE = "DELETE") {result = this._delete(trailJson);}
+        if(trailJson.TYPE == "CREATE") {result = this._create(trailJson);}
+        else if(trailJson.TYPE == "MOVE" || trailJson.TYPE == "EDIT" || trailJson.TYPE == "ARCHIVE") {result = this._update(trailJson);}
+        else if(trailJson.TYPE == "DELETE") {result = this._delete(trailJson);}
         else {
-          result = {code : 400, message : "Unknown trail type"};
+          result = {code : 400, message : "Unknown trail type", trail : trailJson};
           return result;
         }
-
+        setTimeout(()=>{},2000);
         if(result.code!=200) break;
       }
     return result;
@@ -526,5 +552,5 @@ function onSync() {
   tq.parse();
   let sync_result = fb.sync(tq.toArray());
   if(sync_result.code == 200) console.log("successfully synced : ",Util.timestamp());
-  else { console.log("Error in sync : ",Util.timestamp(),sync_result.message); }
+  else { console.log("Error in sync : ",Util.timestamp(),sync_result.message);console.log(sync_result.trail) }
 }
