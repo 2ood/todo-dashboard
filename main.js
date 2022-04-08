@@ -52,7 +52,7 @@
     DETAILS : {}
   }
 
-5. delete a li (implemented)
+3. delete a li (implemented)
   src : cancel button
   evt : click
 
@@ -65,14 +65,11 @@
     }
   }
 
-
-
-
-1 <-> 4
-
-2 <-> 2
-
-3 <-> 3
+reverse function
+1 <-> 3
+2-1 <-> 2-1
+2-2 <-> 2-2
+2-3 <-> ? cannot undo
 */
 
 //class Work represents each listed works (to do, doing, or done).
@@ -177,7 +174,6 @@ class TrailQueue {
 }
 
 //class FirebaseHandler groups functions that interacts with firestore directly.
-//TODO : implement methods
 class FirebaseHandler {
   constructor() {
     this.firebaseConfig = {
@@ -264,7 +260,6 @@ class FirebaseHandler {
     }
   }
 
-  //TODO : implement
   //only used by sync
   _delete(trail) {
     let result = {code : 406, message : "Not acceptible in delete method", trail : trail};
@@ -281,7 +276,6 @@ class FirebaseHandler {
     return result;
   }
 
-  //TODO : implement
   //only used by sync
   _archive(trail) {
     let result = {code : 406, message : "Not acceptible in archive method"};
@@ -331,6 +325,7 @@ class FirebaseHandler {
   }
 }
 
+//vaious utility methods for generating timestamp, id.
 class Util {
   //returns a string of runtime time
   static timestamp() {
@@ -414,7 +409,7 @@ function initializeList(target_ul, statusName) {
     let target = evt.toElement;
     const dragging = document.querySelector(".dragging");
 
-    for(;target!=document;) {
+    while(target!=document) {
       if(target.classList.contains("droppable")) {
         target.insertBefore(dragging,null);
         const trailJson = {
@@ -443,6 +438,7 @@ function initializeList(target_ul, statusName) {
     add_button.addEventListener("click",handleAdd);
 }
 
+//loads all the works in "active" collection
 function loadActiveLi() {
 
   const collectionRef = fb.firestore.collection("active");
@@ -564,6 +560,8 @@ function getTodayFormatted() {
     return [year, month, day].join('-');
 }
 
+//function on "Ctrl+s" key down
+//parses current trail queue
 function onSaved() {
   tq.parse();
   console.log("saved : ", Util.timestamp());
@@ -574,6 +572,8 @@ function onUndo() {
   console.log("undo : ",Util.timestamp());
 }
 
+//function on "Ctrl+q" key down
+//executes current trail queue
 function onSync() {
   console.log("started syncing : ",Util.timestamp());
   tq.parse();
