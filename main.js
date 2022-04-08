@@ -141,6 +141,20 @@ class TrailQueue {
   dequeue() {
     return this._arr.shift();
   }
+
+  //return true if the queue is not empty
+  hasMore() {
+    return (this._arr.length>0);
+  }
+
+  //dequeue all and return an array;
+  dequeueToArray() {
+    let result = [];
+    while(this.hasMore()) {
+      result.push(this.dequeue());
+    }
+    return result;
+  }
   //return all the queued items in array
   toArray() {
     return this._arr;
@@ -196,12 +210,14 @@ class FirebaseHandler {
 
     const target_ref = this.firestore.collection(workJson.IS_ACTIVE?"active":"archived").doc(workJson.ID);
 
-    target_ref.set(workJson).then(()=>{
-      result = {code: 200, message : "OK", trail : trail};
-    }).catch((error) => {
+    const r = target_ref.set(workJson).catch((error) => {
       result = {code : 400, message : error.message, trail : trail};
-    });
+      return result;
+    });;
+
+    result = {code: 200, message : "OK", trail : trail};
     return result;
+
   }
 
   //only used by sync
@@ -212,6 +228,7 @@ class FirebaseHandler {
     let is_active = true;
 
     if(trail.TYPE=="MOVE") {
+      const to = trail.DETAILS.TO ;
       updateJson = {
         IS_DONE : (to == "done-ul"),
         IS_STARTED : (to == "doing-ul" || to=="done-ul"),
@@ -219,8 +236,9 @@ class FirebaseHandler {
       }
     }
     else if (trail.TYPE=="EDIT") {
+      const to = trail.DETAILS.TO;
       updateJson = {
-        CONTENT : trail.DETAILS.TO
+        CONTENT : to
       }
     }
     else if (trail.TYPE=="ARCHIVE") {
@@ -231,19 +249,19 @@ class FirebaseHandler {
     else return result;
 
     const target_ref = this.firestore.collection(is_active?"active":"archived").doc(trail.TARGET_ID);
-    target_ref.update(updateJson).then(()=>{
-      result = {code: 200, message : "OK", trail : trail};
-
-      if(trail.TYPE=="ARCHIVE") {
-        result = _archive(trail);
-      }
-
-      return result;
-
-    }).catch((error) => {
-      result = {code : 400, message : error.message, trail : trail};
-      return result;
+    const r = target_ref.update(updateJson).catch((error)=>{
+        result = {code: 400, message : error.message, trail : trail};
+        return result;
     });
+
+    if(trail.TYPE=="ARCHIVE") {
+        result = _archive(trail);
+        return result;
+    }
+    else {
+      result = {code: 200, message : "OK", trail : trail};
+      return result;
+    }
   }
 
   //TODO : implement
@@ -252,6 +270,14 @@ class FirebaseHandler {
     let result = {code : 406, message : "Not acceptible in delete method", trail : trail};
     if(trail.TYPE!="DELETE") return result;
 
+    const reference_ref = this.firestore.collection("active").doc(trail.TARGET_ID);
+
+    let r = reference_ref.delete().catch((error)=>{
+        result = {code: 400, message : error.message, trail : trail};
+        return result;
+    });
+
+    result = {code: 200, message : "OK", trail : trail};
     return result;
   }
 
@@ -272,22 +298,21 @@ class FirebaseHandler {
               result = {code: 200, message : "OK", trail : trail};
           }).catch((error) => {
             result = {code : 400, message : error.message, trail : trail};
+            return result;
           });
         }).catch((error) => {
           result = {code : 400, message : error.message, trail : trail};
+          return result;
         });
       }
     });
-
-
-    return result;
   }
 
   //edit the database according to parsed trails.
 
   sync(parsed_trail_array) {
-    let result = {code : 406, message : "Not acceptible", trail : null};
-    
+    let result = {code : 400, message : "trail Empty", trail : null};
+
       for(let i=0; i<parsed_trail_array.length;i++) {
         let trailJson = parsed_trail_array[i];
         if(trailJson.TYPE == "CREATE") {result = this._create(trailJson);}
@@ -298,7 +323,9 @@ class FirebaseHandler {
           return result;
         }
         setTimeout(()=>{},2000);
-        if(result.code!=200) break;
+        console.log(result);
+
+        if(i+1 >= parsed_trail_array.length) return result;
       }
     return result;
   }
@@ -550,7 +577,7 @@ function onUndo() {
 function onSync() {
   console.log("started syncing : ",Util.timestamp());
   tq.parse();
-  let sync_result = fb.sync(tq.toArray());
+  let sync_result = fb.sync(tq.dequeueToArray());
   if(sync_result.code == 200) console.log("successfully synced : ",Util.timestamp());
   else { console.log("Error in sync : ",Util.timestamp(),sync_result.message);console.log(sync_result.trail) }
 }
