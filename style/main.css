@@ -30,6 +30,39 @@ banner {
   display: block;
 }
 
+status {
+  display: block;
+  text-align: right;
+}
+
+status button {
+  width : 100px;
+  height : 30px;
+  outline: none;
+  border : none;
+  margin : 2px;
+  border-radius: 3px;
+}
+
+status button:active {
+  opacity : .7;
+}
+
+status button:nth-child(2n-1) {
+  background-color : skyblue;
+  color : blue;
+}
+
+status button:nth-child(2n) {
+  background-color: lightgreen;
+  color : green;
+}
+
+status button.reminder {
+  background-color: orange;
+  color : white;
+}
+
 columns {
   display: flex;
 }
@@ -84,12 +117,12 @@ button.add {
   transition: all .1s ease-in;
 }
 
-button:hover {
+column button:hover {
   color : var(--accent);
   transition: all .1s ease-in-out;
 }
 
-button:active {
+column button:active {
   color : #33333333;
   background-color: transparent;
   transition : all 0 ease-in;

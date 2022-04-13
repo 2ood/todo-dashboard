@@ -133,6 +133,11 @@ class TrailQueue {
   //add an item to the queue
   enqueue(item) {
     this._arr.push(item);
+    const buttons = document.querySelectorAll("banner button");
+
+    for(let b of buttons) {
+      b.classList.add("reminder");
+    }
   }
   //return the first item of the reamining queue
   dequeue() {
@@ -377,6 +382,12 @@ document.addEventListener("keydown",
   }
 });
 
+const save_button = document.getElementById("save-button");
+const sync_button = document.getElementById("sync-button");
+
+save_button.addEventListener("click",onSaved);
+sync_button.addEventListener("click",onSync);
+
 //initalizes column's ul tag
 //loads work objects and appends them to the target ul
 function initializeList(target_ul, statusName) {
@@ -565,6 +576,9 @@ function getTodayFormatted() {
 function onSaved() {
   tq.parse();
   console.log("saved : ", Util.timestamp());
+
+  const button = document.getElementById("save-button");
+  button.classList.remove("reminder");
 }
 
 //:TODO : implement
@@ -576,8 +590,14 @@ function onUndo() {
 //executes current trail queue
 function onSync() {
   console.log("started syncing : ",Util.timestamp());
-  tq.parse();
+
+  onSaved();
   let sync_result = fb.sync(tq.dequeueToArray());
-  if(sync_result.code == 200) console.log("successfully synced : ",Util.timestamp());
+  if(sync_result.code == 200) {
+    console.log("successfully synced : ",Util.timestamp());
+
+    const button = document.getElementById("sync-button");
+    button.classList.remove("reminder");
+  }
   else { console.log("Error in sync : ",Util.timestamp(),sync_result.message);console.log(sync_result.trail) }
 }
