@@ -11,6 +11,8 @@
   --list-height : 70px;
   --list-min-height : 300px;
   --list-margin : 10px;
+  --primary-color : #50586C;
+  --secondary-color : #DCE2F0;
   --accent : skyblue;
 }
 
@@ -23,13 +25,15 @@
 #content {
   text-align : center;
   min-height: 100vh;
-  padding : 10% 10% 0 10%;
-  background-color: beige;
+  padding : 5% 10% 0 10%;
+  background-color: var(--primary-color);
+  color : var(--secondary-color);
 }
 
 banner {
   width : 100%;
   display: block;
+  color : var(--secondary-color);
 }
 
 status {
@@ -49,20 +53,12 @@ status button {
 
 status button:active {
   opacity : .7;
-}
-
-status button:nth-child(2n-1) {
-  background-color : skyblue;
+  background-color : var(--secondary-color);
   color : blue;
 }
 
-status button:nth-child(2n) {
-  background-color: lightgreen;
-  color : green;
-}
-
 status button.reminder {
-  background-color: orange;
+  background-color: var(--accent);
   color : white;
 }
 
@@ -99,12 +95,13 @@ column ul li {
   cursor : move;
   margin-bottom : var(--list-margin);
   transition: all .3s ease-in-out;
-  box-shadow: 0 3px 10px #33333333;
-  background-color: white;
+  background-color: var(--secondary-color);
+  color : var(--primary-color);
 }
 
 column ul li:hover {
-  background-color: #33333311;
+  transform: scale(110%);
+  margin : 10px 0;
   transition: all .3s ease-in-out;
 }
 
@@ -119,18 +116,18 @@ button.add {
   width : 20px;
   height : 20px;
   min-height : var(--list-height);
-  color : #333333;
+  color : var(--secondary-color);
   background-color: transparent;
   transition: all .1s ease-in;
 }
 
 column button:hover {
-  color : var(--accent);
+  opacity : .3;
   transition: all .1s ease-in-out;
 }
 
 column button:active {
-  color : #33333333;
+  opacity : .3;
   background-color: transparent;
   transition : all 0 ease-in;
 }
@@ -147,7 +144,7 @@ column button:active {
 }
 
 .dragging {
-  opacity : .5;
+  opacity : .3;
 }
 
 .colored-drop-point {
@@ -163,8 +160,14 @@ li input {
   width : 80%;
   margin : 0 auto;
   font-size: var(--normal);
-  vertical-align: center;
-  background-color: transparent;
   text-overflow: ellipsis;
-  overflow : hidden;
+  background-color: inherit;
+  color : inherit;
+}
+
+li:hover input {
+  overflow : visible;
+  text-overflow: revert;
+  white-space: nowrap;
+  height : auto;
 }
