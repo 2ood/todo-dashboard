@@ -95,8 +95,8 @@ column ul li {
   cursor : move;
   margin-bottom : var(--list-margin);
   transition: all .3s ease-in-out;
-  background-color: var(--secondary-color);
-  color : var(--primary-color);
+  background-color: white;
+  color : black;
 }
 
 column ul li:hover {
