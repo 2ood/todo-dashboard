@@ -1,9 +1,11 @@
+
 * {
   margin : 0;
   padding : 0;
   box-sizing: border-box;
-  color : black;
+  font-family : sans-serif;
 }
+
 :root {
   --normal : 20px;
   --list-height : 70px;
@@ -22,7 +24,7 @@
   text-align : center;
   min-height: 100vh;
   padding : 10% 10% 0 10%;
-  font-family : 'NotoSan-regular';
+  background-color: beige;
 }
 
 banner {
@@ -42,6 +44,7 @@ status button {
   border : none;
   margin : 2px;
   border-radius: 3px;
+  font-size: 1.2em;
 }
 
 status button:active {
@@ -70,11 +73,13 @@ columns {
 column {
   flex : 1;
   padding-top : 30px;
+  padding : 20px;
   position: relative;
 }
 
 column > h2:first-of-type {
   border-bottom: 1px gray solid;
+  line-height: 2em;
   margin-bottom: 20px;
 }
 
@@ -87,13 +92,15 @@ column ul {
 column ul li {
   display : block;
   position: relative;
-  border : 1px gray solid;
+  border : none;
   border-radius: 3px;
   line-height: var(--list-height);
   min-height : var(--list-height);
   cursor : move;
   margin-bottom : var(--list-margin);
   transition: all .3s ease-in-out;
+  box-shadow: 0 3px 10px #33333333;
+  background-color: white;
 }
 
 column ul li:hover {
@@ -153,8 +160,11 @@ li input {
   outline: none;
   border : none;
   text-align: center;
-  width : 100%;
+  width : 80%;
+  margin : 0 auto;
   font-size: var(--normal);
   vertical-align: center;
   background-color: transparent;
+  text-overflow: ellipsis;
+  overflow : hidden;
 }
