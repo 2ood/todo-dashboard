@@ -1,0 +1,24 @@
+{
+  "name": "todo-dashboard",
+  "version": "1.0.0",
+  "description": "This is an archive repository for my to-do web I made in order to track my works to do on duty.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/2ood/todo-dashboard.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/2ood/todo-dashboard/issues"
+  },
+  "homepage": "https://github.com/2ood/todo-dashboard#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.1"
+  }
+}
