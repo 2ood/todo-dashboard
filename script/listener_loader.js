@@ -118,7 +118,7 @@ export default class ListenerLoader {
       evt.preventDefault();
       const target = evt.srcElement.parentNode;
 
-      const trailJson = TrailJson.deleteJson({
+      const trailJson = Trail.deleteJson({
           id: target.id,
           from: target.parentNode.id
       });
