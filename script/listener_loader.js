@@ -97,7 +97,7 @@ export default class ListenerLoader {
 
       if(src.classList.contains("none") && src.value!="") evt.srcElement.classList.remove("none");
 
-      const trailJson = TrailJson.editJson({
+      const trailJson = Trail.editJson({
         id:src.parentNode.id,
         from:src.placeholder,
         to:src.value
