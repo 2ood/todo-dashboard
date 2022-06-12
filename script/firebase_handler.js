@@ -1,3 +1,5 @@
+import Util from "./util.js";
+
 //class FirebaseHandler groups functions that interacts with firestore directly.
 export default class FirebaseHandler {
   constructor() {
