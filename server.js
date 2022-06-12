@@ -19,8 +19,8 @@ app.use('/style', express.static(__dirname+"/style"));
 app.use('/script', express.static(__dirname+"/script"));
 
 
-app.listen(8080, function(){
-  console.log("listening on 8080");
+app.listen(process.env.PORT || 8080, function(){
+  console.log(`listening on ${process.env.PORT} or 8080`);
 });
 
 app.get('/',function(req,res){
