@@ -1,8 +1,8 @@
 import ListenerLoader from "./listener_loader.js";
 
 export default class DOMBuilder {
-  constructor(){
-    this.listenerLoader = new ListenerLoader();
+  constructor(listenerLoader){
+    this.listenerLoader = listenerLoader;
   }
   //initalizes column's ul tag
   //loads work objects and appends them to the target ul

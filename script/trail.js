@@ -1,3 +1,5 @@
+import Util from "./util.js";
+
 //class Trail represents a change in list.
 export class Trail {
   constructor(type, timestamp, target_id, details) {
@@ -17,7 +19,53 @@ export class Trail {
       TARGET_ID : this.TARGET_ID,
       DETAILS : this.DETAILS
     };
+  }
 
+  static moveJson(simpleJson) {
+    return {
+      TYPE : "MOVE",
+      TIMESTAMP : Util.timestamp(),
+      TARGET_ID : simpleJson.id,
+      DETAILS : {
+        FROM : simpleJson.from,
+        TO : simpleJson.to,
+      }
+    };
+  }
+
+  static createJson(simpleJson) {
+    return {
+      TYPE : "CREATE",
+      TIMESTAMP : Util.timestamp(),
+      TARGET_ID : simpleJson.id,
+      DETAILS : {
+        CONTENT : "",
+        TO : simpleJson.to
+      }
+    };
+  }
+
+  static editJson(simpleJson) {
+    return {
+      TYPE : "EDIT",
+      TIMESTAMP : Util.timestamp(),
+      TARGET_ID : simpleJson.id,
+      DETAILS : {
+        FROM : simpleJson.from,
+        TO : simpleJson.to
+      }
+    };
+  }
+
+  static deleteJson(simpleJson) {
+    return {
+      TYPE : "DELETE",
+      TIMESTAMP : Util.timestamp(),
+      TARGET_ID : simpleJson.id,
+      DETAILS : {
+        FROM : simpleJson.from
+      }
+    };
   }
 }
 

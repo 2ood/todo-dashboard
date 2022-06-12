@@ -1,7 +1,14 @@
+import {Trail} from "./trail.js";
+
 export default class ListenerLoader {
-  constructor() {}
+  constructor(document_dom, trailqueue) {
+    this.doc = document_dom;
+    this.tq = trailqueue;
+  }
 
   loadUlListener(target_ul) {
+    const doc = this.doc;
+    const tq = this.tq;
     //handles drag event of ul tags
     function handleDrag(evt) {
       evt.preventDefault();
@@ -12,35 +19,27 @@ export default class ListenerLoader {
       const id = Util.id();
       target_ul.appendChild(buildLi("",id,true));
 
-      const trailJson = {
-        TYPE : "CREATE",
-        TIMESTAMP : Util.timestamp(),
-        TARGET_ID : id,
-        DETAILS : {
-          CONTENT : "",
-          TO : target_ul.id
-        }
-      }
+      const trailJson = Trail.createJson({
+        id:id,
+        to:target_ul.id
+      });
 
       tq.enqueue(trailJson);
     }
     //handles drop event of ul
     function handleDrop(evt) {
       let target = evt.toElement;
-      const dragging = document.querySelector(".dragging");
+      const dragging = doc.querySelector(".dragging");
 
       while(target!=document) {
         if(target.classList.contains("droppable")) {
           target.insertBefore(dragging,null);
-          const trailJson = {
-            TYPE : "MOVE",
-            TIMESTAMP : Util.timestamp(),
-            TARGET_ID : dragging.id,
-            DETAILS : {
-              FROM : dragging.getAttribute("from"),
-              TO : target.id,
-            }
-          }
+          const trailJson = Trail.moveJson({
+            id:dragging.id,
+            from:dragging.getAttribute("from"),
+            to:target.id
+          });
+
           tq.enqueue(trailJson);
           break;
         }
@@ -61,14 +60,18 @@ export default class ListenerLoader {
   }
 
   loadLiListener(target_li) {
+    const doc = this.doc;
+
     function handleDragStart(evt) {
       const src = evt.srcElement;
       src.classList.add("dragging");
       src.setAttribute("from",src.parentNode.id);
       src.classList.remove("draggable");
 
-      const droppables = document.getElementsByClassName("droppable");
-      for(d of droppables) d.classList.add("colored-drop-point");
+
+      const droppables = doc.getElementsByClassName("droppable");
+
+      for(let d of droppables) d.classList.add("colored-drop-point");
     }
     //handles dragend event of lis
     function handleDragEnd(evt) {
@@ -79,8 +82,8 @@ export default class ListenerLoader {
       src.classList.remove("dragging");
       src.classList.add("draggable");
 
-      const droppables = document.getElementsByClassName("droppable");
-      for(d of droppables) d.classList.remove("colored-drop-point");
+      const droppables = doc.getElementsByClassName("droppable");
+      for(let d of droppables) d.classList.remove("colored-drop-point");
     }
 
     target_li.addEventListener("dragstart",handleDragStart);
@@ -88,20 +91,18 @@ export default class ListenerLoader {
   }
 
   loadItemInputListener(target_input) {
+    const tq = this.tq;
     function handleChange(evt) {
       const src = evt.srcElement;
 
       if(src.classList.contains("none") && src.value!="") evt.srcElement.classList.remove("none");
 
-      const trailJson = {
-        TYPE : "EDIT",
-        TIMESTAMP : Util.timestamp(),
-        TARGET_ID : src.parentNode.id,
-        DETAILS : {
-          FROM : src.placeholder,
-          TO : src.value
-        }
-      }
+      const trailJson = TrailJson.editJson({
+        id:src.parentNode.id,
+        from:src.placeholder,
+        to:src.value
+      });
+
       tq.enqueue(trailJson);
       src.placeholder = src.value;
     }
@@ -111,18 +112,17 @@ export default class ListenerLoader {
 
   loadCancelListener(target_button) {
     //handles click event of cancel buttons
+
+    const tq = this.tq;
     function handleCancel(evt) {
       evt.preventDefault();
       const target = evt.srcElement.parentNode;
 
-      const trailJson = {
-        TYPE : "DELETE",
-        TIMESTAMP : Util.timestamp(),
-        TARGET_ID : target.id,
-        DETAILS : {
-          FROM : target.parentNode.id
-        }
-      }
+      const trailJson = TrailJson.deleteJson({
+          id: target.id,
+          from: target.parentNode.id
+      });
+
       tq.enqueue(trailJson);
 
       target.parentNode.removeChild(target);

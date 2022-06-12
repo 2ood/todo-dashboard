@@ -3,24 +3,7 @@ import {Trail, TrailQueue} from "./trail.js";
 import {Work, WorkHandler} from "./work.js";
 import DOMBuilder from "./dom_builder.js";
 import ListenerLoader from "./listener_loader.js";
-
-//vaious utility methods for generating timestamp, id.
-class Util {
-  //returns a string of runtime time
-  static timestamp() {
-    return new Date();
-  }
-  static nullTime() {
-    let result = new Date();
-    result.setTime(0);
-    return result;
-  }
-
-  //returns a random 9-digit random id
-  static id() {
-    return Math.random().toString(36).substr(2, 9);
-  }
-}
+import Util from "./util.js";
 
 const MILLISECONDS_OF_5MIN = 5*60*1000;
 const fb = new FirebaseHandler();
@@ -29,8 +12,9 @@ const todo_ul = document.getElementById("todo-ul");
 const doing_ul = document.getElementById("doing-ul");
 const done_ul = document.getElementById("done-ul");
 
-const builder = new DOMBuilder();
-const listenerLoader = new ListenerLoader();
+const listenerLoader = new ListenerLoader(document,tq);
+const builder = new DOMBuilder(listenerLoader);
+
 
 let list_data = await fb.loadActiveLiFromDB();
 
